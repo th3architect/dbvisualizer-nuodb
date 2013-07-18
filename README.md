@@ -2,16 +2,20 @@
 
 ## Dropping the XML Files in Place
 
-Run the following commands:
+Enabling auto-discovery of the NuoDB JDBC Jar file:
+
+    export dbvisualizer_home=/Applications/DbVisualizer.app/Contents/java/app
+    cp nuodb.xml ${dbvisualizer_home}/resources/profiles/
+
+## Adding Profile Support
+
+*WORK IN PROGRESS*
+
+Run the following commands to add the profile declarations:
 
     export dbvisualizer_home=/Applications/DbVisualizer.app/Contents/java/app
     cp drivers.xml ${dbvisualizer_home}/resources/
     cp database-mappings.xml ${dbvisualizer_home}/resources/
-    cp nuodb.xml ${dbvisualizer_home}/resources/profiles/
-
-## Updating the DbVisualizer Jar
-
-*WORK IN PROGRESS*
 
 In order to integrate with DbVisualizer you have to update their Jar file with
 the compiled class herein. After compiling this project, perform the following
