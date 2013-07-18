@@ -25,7 +25,7 @@ commands:
     cd target/classes
     jar uf ${dbvisualizer_home}/lib/dbvis.jar com/onseven/dbvis/db/nuodb/NuoDBFacade.class
 
-One would hope that would be the end of it, but there is no discovery in DbVis,
+I had hoped that would be the end of it, but there is no discovery in DbVis,
 you have intrusive declarations such as this in the DatabaseFacade class:
 
     public static final String SYBASE_IQ_DISPLAY_NAME = "Sybase IQ";
@@ -40,17 +40,24 @@ you have intrusive declarations such as this in the DatabaseFacade class:
     public static final String SQLITE_DISPLAY_NAME = "SQLite";
     public static final String[][] DATABASE_NAMES = {{"generic", "Generic"}, {"cache", "Cache"}, {"db2-iseries", "DB2 iSeries"}, {"db2", "DB2 LUW"}, {"db2-zos", "DB2 z/OS"}, {"firebird", "Firebird"}, {"frontbase", "FrontBase"}, {"informix", "Informix"}, {"neoview", "HP Neoview"}, {"hsql", "HSQLDB"}, {"h2", "H2"}, {"derby", "JavaDB/Derby"}, {"jdatastore", "JDataStore"}, {"maxdb", "MaxDB"}, {"mimer", "Mimer SQL"}, {"mysql", "MySQL"}, {"netezza", "Netezza"}, {"oracle", "Oracle"}, {"pervasive", "Pervasive"}, {"postgresql", "PostgreSQL"}, {"progress", "Progress"}, {"sqlserver", "SQL Server"}, {"sqlite", "SQLite"}, {"sybase-asa", "Sybase SQL Anywhere"}, {"sybase-ase", "Sybase ASE"}, {"sybase-iq", "Sybase IQ"}};
 
-It would have been nice if they built this list on the fly so that anyone could
-simply extend their environment. But alas, it's closed source so I cannot modify
-it. Funny, since they have you go through all the effort of declaring a mapping
-that you should have to declare it a second time in Java code, huh? No DRY here.
+This is not DRY. There are at least three places of duplication, in the
+database-mappings.xml file, as explicitly declared variables per database
+type in DatabaseFacade, then a third time in the DATABASE_NAMES list in
+DatabaseFacade as well. Not to consider the fact that there is duplication
+in the profile files too.
 
-And worse yet, these sorts of abstract methods exist:
+It would have been nice if they built this list on the fly so that anyone could
+simply extend their environment. This would mean that the whole 'int getVendor()'
+silliness could go away.
+
+Further, these sorts of intrusive abstract methods exist, more wrinkles for anyone
+trying to add support for a new database; this tends to imply there whole code base
+is highly coupled, and abstractions for database specific functionality is not
+clearly separated:
 
     public abstract boolean isOracle();
     public abstract boolean isSQLServer();
     public abstract boolean isSybaseASE();
 
-This project is on hold until we get some help from the DbVis folks. I am going
-to go off and add support to an open source tool instead.
+This project is on hold until we get some help from the DbVis folks.
 
