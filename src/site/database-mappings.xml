@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+   @(#)$Id: database-mappings.xml 14328 2011-12-08 08:31:47Z rogge $
+
+   Copyright (c) DbVis Software AB. All Rights Reserved.
+-->
+
+<!-- =================================================================== -->
+<!-- This file specifies what database profile and database facade       -->
+<!-- implementation that will be used for a database connection          -->
+<!-- =================================================================== -->
+
+<!--
+  List of JDBC URL prefixes for a couple of JDBC drivers that are
+  provided/recommended by the actual database vendor. Use these when
+  matchin the DatabaseMetaData.getURL name
+    jdbc:borland
+    jdbc:Cache
+    jdbc:daffodilDB
+    jdbc:db2
+    jdbc:frontBase
+    jdbc:hsqldb
+    jdbc:informix-sqli
+    jdbc:jdbcProgress
+    jdbc:mckoi
+    jdbc:microsoft:sqlserver
+    jdbc:sqlserver
+    jdbc:mimer
+    jdbc:mysql
+    jdbc:odbc
+    jdbc:oracle
+    jdbc:pervasive
+    jdbc:pointbase
+    jdbc:postgresql
+    jdbc:sapdb
+    jdbc:sybase
+
+  These are some third party drivers URL's:
+    jdbc:datadirect:db2
+    jdbc:datadirect:oracle
+    jdbc:datadirect:sqlserver
+    jdbc:datadirect:sybase
+    jdbc:jtds:microsoft
+    jdbc:jtds:sybase
+
+  The .matches() method accepts standard regexp expressions. More info at:
+    http://java.sun.com/j2se/1.4.2/docs/api/java/util/regex/Pattern.html
+
+  These are the valid context prefixes:
+    "DatabaseMetaData." or "dm."
+      Checks with any accessor method (that takes no arguments) in the
+      DatabaseMetaData object. The name of the accessor method must exactly
+      match the appropriate DatabaseMetaData accessor. Example:
+        <If test="#dm.getURL" value="^jdbc:mysql.*"/>
+      Note: only get...() methods may be called i.e no set...()
+
+    "SystemProperties." or "sp."
+      Check the System.getProperties. Example:
+        <If test="#sp.getProperty('os.name').equals('linux')"/>
+      Note: setProperty() calls should be used with care
+
+    "ConnectionProperties." or "cp."
+      Check the database connection properties i.e properties listed in the <General>
+      section of the user preferences file (aka dbvis.xml). Example:
+        <If test="#cp.getProperty('SQLAllowGo').equals('true')"/>
+           or
+        <Run expr="#cp.setProperty('SQLAllowGo', 'false')"/>
+
+    "DriverProperties." or "dp."
+      The database connection driver properties i.e properties available
+      specificially for a type of JDBC driver. These are used to fine tune
+      the driver and set parameters.
+        <Run expr="#dp.setProperty('handleSynonyms', 'true')"/>
+
+     Note: The first matching mapping is the one that will be used.
+-->
+
+<DbVisualizer>
+    <DatabaseMappings>
+
+        <!--Cache -->
+        <DatabaseMapping>
+            <If test="#db.getDatabaseType().equals('cache')">
+                <Run expr="#me.setFacade('com.onseven.dbvis.db.cache.CacheFacade')"/>
+            </If>
+        </DatabaseMapping>
+
+        <!--DB2-->
+        <DatabaseMapping>
+            <If test="#db.getDatabaseType().equals('db2')">
+                <Run expr="#me.setProfile('db2')"/>
+                <Run expr="#me.setFacade('com.onseven.dbvis.db.db2.DB2Facade')"/>
+            </If>
+        </DatabaseMapping>
+
+        <!--DB2 z/OS -->
+        <DatabaseMapping>
+            <If test="#db.getDatabaseType().equals('db2-zos')">
+                <Run expr="#me.setProfile('db2-zos')"/>
+                <Run expr="#me.setFacade('com.onseven.dbvis.db.db2zos.DB2zOSFacade')"/>
+            </If>
+        </DatabaseMapping>
+
+        <!--DB2 iSeries -->
+        <DatabaseMapping>
+            <If test="#db.getDatabaseType().equals('db2-iseries')">
+                <Run expr="#me.setFacade('com.onseven.dbvis.db.db2iseries.DB2iSeriesFacade')"/>
+            </If>
+        </DatabaseMapping>
+
+        <!-- Derby -->
+        <DatabaseMapping>
+            <If test="#db.getDatabaseType().equals('derby')">
+                <Run expr="#me.setProfile('derby')"/>
+                <Run expr="#me.setFacade('com.onseven.dbvis.db.derby.DerbyFacade')"/>
+            </If>
+        </DatabaseMapping>
+
+        <!-- FrontBase -->
+        <DatabaseMapping>
+            <If test="#db.getDatabaseType().equals('frontbase')">
+                <Run expr="#me.setFacade('com.onseven.dbvis.db.frontbase.FrontbaseFacade')"/>
+            </If>
+        </DatabaseMapping>
+
+        <!-- HP Neoview -->
+        <DatabaseMapping>
+            <If test="#db.getDatabaseType().equals('neoview')">
+                <Run expr="#me.setProfile('neoview')"/>
+                <Run expr="#me.setFacade('com.onseven.dbvis.db.neoview.NeoViewFacade')"/>
+            </If>
+        </DatabaseMapping>
+
+        <!-- Informix -->
+        <DatabaseMapping>
+            <If test="#db.getDatabaseType().equals('informix')">
+                <Run expr="#me.setProfile('informix')"/>
+                <Run expr="#me.setFacade('com.onseven.dbvis.db.informix.InformixFacade')"/>
+            </If>
+        </DatabaseMapping>
+
+        <!-- MaxDB -->
+        <DatabaseMapping>
+            <If test="#db.getDatabaseType().equals('maxdb')">
+                <Run expr="#me.setFacade('com.onseven.dbvis.db.maxdb.MaxDBFacade')"/>
+            </If>
+        </DatabaseMapping>
+
+        <!-- McKoi -->
+        <DatabaseMapping>
+            <If test="#db.getDatabaseType().equals('mckoi')">
+                <Run expr="#me.setFacade('com.onseven.dbvis.db.mckoi.MckoiFacade')"/>
+            </If>
+        </DatabaseMapping>
+
+        <!-- Mimer -->
+        <DatabaseMapping>
+            <If test="#db.getDatabaseType().equals('mimer')">
+                <Run expr="#me.setProfile('mimer')"/>
+                <Run expr="#me.setFacade('com.onseven.dbvis.db.mimer.MimerFacade')"/>
+            </If>
+        </DatabaseMapping>
+
+        <!-- MySQL -->
+        <DatabaseMapping>
+            <If test="#db.getDatabaseType().equals('mysql')">
+                <Run expr="#me.setProfile('mysql')"/>
+                <Run expr="#me.setFacade('com.onseven.dbvis.db.mysql.MySQLFacade')"/>
+            </If>
+        </DatabaseMapping>
+
+        <!-- NuoDB -->
+        <DatabaseMapping>
+            <If test="#db.getDatabaseType().equals('nuodb')">
+                <Run expr="#me.setProfile('nuodb')"/>
+                <Run expr="#me.setFacade('com.onseven.dbvis.db.nuodb.NuoDBFacade')"/>
+            </If>
+        </DatabaseMapping>
+
+        <!-- Oracle -->
+        <DatabaseMapping>
+            <If test="#db.getDatabaseType().equals('oracle')">
+                <Run expr="#me.setProfile('oracle')"/>
+                <Run expr="#me.setFacade('com.onseven.dbvis.db.oracle.OracleFacade')"/>
+            </If>
+        </DatabaseMapping>
+
+        <!-- PointBase -->
+        <DatabaseMapping>
+            <If test="#db.getDatabaseType().equals('pointbase')">
+                <Run expr="#me.setFacade('com.onseven.dbvis.db.pointbase.PointbaseFacade')"/>
+            </If>
+        </DatabaseMapping>
+
+        <!-- PostgreSQL 8.0 and later-->
+        <DatabaseMapping>
+            <If test="#db.getDatabaseType().equals('postgresql') and
+                   #dm.getDatabaseMajorVersion() gte 8">
+                <Run expr="#me.setProfile('postgresql8')"/>
+                <Run expr="#me.setFacade('com.onseven.dbvis.db.postgresql.PostgreSQLFacade')"/>
+            </If>
+        </DatabaseMapping>
+
+        <!-- PostgreSQL -->
+        <DatabaseMapping>
+            <If test="#db.getDatabaseType().equals('postgresql')">
+                <Run expr="#me.setProfile('postgresql')"/>
+                <Run expr="#me.setFacade('com.onseven.dbvis.db.postgresql.PostgreSQLFacade')"/>
+            </If>
+        </DatabaseMapping>
+
+        <!-- Progress -->
+        <DatabaseMapping>
+            <If test="#db.getDatabaseType().equals('progress')">
+            </If>
+        </DatabaseMapping>
+
+        <!-- SQL Server -->
+        <DatabaseMapping>
+            <If test="#db.getDatabaseType().equals('sqlserver')">
+                <Run expr="#me.setProfile('sqlserver')"/>
+                <Run expr="#me.setFacade('com.onseven.dbvis.db.sqlserver.SQLServerFacade')"/>
+            </If>
+        </DatabaseMapping>
+
+        <!-- Sybase ASA -->
+        <DatabaseMapping>
+            <If test="#db.getDatabaseType().equals('sybase-asa')">
+                <Run expr="#me.setFacade('com.onseven.dbvis.db.sybaseasa.SybaseASAFacade')"/>
+            </If>
+        </DatabaseMapping>
+
+        <!-- Sybase ASE -->
+        <DatabaseMapping>
+            <If test="#db.getDatabaseType().equals('sybase-ase')">
+                <Run expr="#me.setProfile('sybase-ase')"/>
+                <Run expr="#me.setFacade('com.onseven.dbvis.db.sybasease.SybaseASEFacade')"/>
+            </If>
+        </DatabaseMapping>
+
+        <!-- H2 -->
+        <DatabaseMapping>
+            <If test="#db.getDatabaseType().equals('h2')">
+                <Run expr="#me.setProfile('h2')"/>
+                <Run expr="#me.setFacade('com.onseven.dbvis.db.h2.H2Facade')"/>
+            </If>
+        </DatabaseMapping>
+
+        <!-- SQLite -->
+        <DatabaseMapping>
+            <If test="#db.getDatabaseType().equals('sqlite')">
+                <Run expr="#me.setProfile('sqlite')"/>
+                <Run expr="#me.setFacade('com.onseven.dbvis.db.sqlite.SQLiteFacade')"/>
+            </If>
+        </DatabaseMapping>
+
+    </DatabaseMappings>
+</DbVisualizer>
