@@ -333,6 +333,63 @@ select * from system.datatypes order by NAME
 
     </ActionGroup>
 
+    <ActionGroup type="Views">
+      <Action id="nuodb-views-create" label="Create View" reload="true" icon="add">
+        <Input label="Schema" style="text" editable="false">
+          <Default>${schema}</Default>
+        </Input>
+        <Input label="View Name" name="viewName" style="text"/>
+        <Input label="Source" style="separator"/>
+        <Input name="source" style="text-editor"/>
+        <Command>
+          <SQL>
+            <![CDATA[create view ${viewName} as ${source}]]></SQL>
+        </Command>
+        <Confirm>
+          Really create view ${schema}.${viewName}?
+        </Confirm>
+        <Result>
+          View ${schema}.${viewName} created!
+        </Result>
+      </Action>
+    </ActionGroup>
+
+    <ActionGroup type="Users">
+      <Action id="nuodb-users-create" label="Create User" reload="true" icon="add">
+        <Input label="User Name" name="userid" style="text"/>
+        <Input label="Password" name="password" style="password"/>
+        <SetVar name="_password" value="#password.equals('') ? '' : ' password \'' + #password + '\''"/>
+
+        <Command>
+          <SQL><![CDATA[create user ${userid} ${_password}]]></SQL>
+        </Command>
+        <Result>
+          User ${userid} created!
+        </Result>
+      </Action>
+    </ActionGroup>
+
+    <ActionGroup type="User">
+      <Action id="nuodb-user-drop" label="Drop User" reload="true" icon="remove">
+        <Input label="User Name" style="text" editable="false">
+          <Default>${objectname}</Default>
+        </Input>
+        <Input label="Cascade Objects" name="cascade" style="check">
+          <Values>cascade</Values>
+        </Input>
+        <Command>
+          <SQL><![CDATA[drop user "${objectname}" ${cascade}]]></SQL>
+        </Command>
+        <Confirm><![CDATA[
+            Really drop user ${objectname}?<br>
+            (Enabling <b>Cascade Objects</b> also removes owned objects!)
+            ]]></Confirm>
+        <Result>
+          User ${objectname} dropped!
+        </Result>
+      </Action>
+    </ActionGroup>
+
     <ActionGroup type="View">
       <Action id="nuodb-view-drop" label="Drop View" reload="true" icon="remove">
         <Input label="View" style="text" editable="false">
