@@ -207,50 +207,61 @@ select * from system.datatypes order by NAME
               classargs="alter"
               doclink="../tableDesigner/tableDesigner.html#mozTocId740254"/>
 
+      <!-- currently unsupported
       <Action id="nuodb-table-rename" label="Rename Table" reload="true" icon="rename">
+        <Input label="Schema" style="text" editable="false">
+          <Default>${schema}</Default>
+        </Input>
         <Input label="Table" style="text" editable="false">
           <Default>${objectname}</Default>
         </Input>
         <Input label="New Table Name" name="newTable" style="text"/>
         <Command>
-          <SQL><![CDATA[alter table "${objectname}" rename to "${newTable}"]]></SQL>
+          <SQL><![CDATA[alter table "${schema}"."${objectname}" rename to "${newTable}"]]></SQL>
         </Command>
         <Confirm>
-          Confirm rename of ${objectname} to ${newTable}?
+          Confirm rename of ${schema}.${objectname} to ${newTable}?
         </Confirm>
         <Result>
-          Table ${objectname} renamed to ${newTable}!
+          Table ${schema}.${objectname} renamed to ${newTable}!
         </Result>
       </Action>
+      -->
 
       <Action id="nuodb-table-clear" label="Empty Table" reload="true">
+        <Input label="Schema" style="text" editable="false">
+          <Default>${schema}</Default>
+        </Input>
         <Input label="Table" style="text" editable="false">
           <Default>${objectname}</Default>
         </Input>
 
         <Command>
-          <SQL><![CDATA[delete from "${objectname}"]]></SQL>
+          <SQL><![CDATA[delete from "${schema}"."${objectname}"]]></SQL>
         </Command>
         <Confirm>
-          Really remove all rows in table ${objectname}?
+          Really remove all rows in table ${schema}.${objectname}?
         </Confirm>
         <Result>
-          All rows in table ${objectname} has been removed!
+          All rows in table ${schema}.${objectname} has been removed!
         </Result>
       </Action>
 
       <Action id="nuodb-table-drop" label="Drop Table" reload="true" icon="remove">
+        <Input label="Schema" style="text" editable="false">
+          <Default>${schema}</Default>
+        </Input>
         <Input label="Table" style="text" editable="false">
           <Default>${objectname}</Default>
         </Input>
         <Command>
-          <SQL><![CDATA[drop table "${objectname}"]]></SQL>
+          <SQL><![CDATA[drop table "${schema}"."${objectname}"]]></SQL>
         </Command>
         <Confirm>
-          Really drop table ${objectname}?
+          Really drop table ${schema}.${objectname}?
         </Confirm>
         <Result>
-          Table ${objectname} has been dropped!
+          Table ${schema}.${objectname} has been dropped!
         </Result>
       </Action>
 
@@ -416,7 +427,7 @@ select * from system.datatypes order by NAME
                 <SetVar name="objectname" value="${getIndexes.INDEX_NAME}"/>
                 <Command idref="nuodb.getIndexes">
                   <Input name="schema" value="${schema}"/>
-                  <Input name="objectname" value="DATATYPES"/>
+                  <Input name="objectname" value="${theTableName}"/>
                   <Output id="getIndexes.INDEX_NAME" index="1"/>
                   <Output id="getIndexes.TABLE_NAME" index="2"/>
                   <Output id="getIndexes.TABLE_SCHEM" index="3"/>
@@ -595,6 +606,12 @@ select * from system.datatypes order by NAME
       <DataView type="Source" label="DDL" viewer="ddl">
         <Input name="formatSQL" value="true"/>
       </DataView>
+      <DataView type="Index" label="Indexes" viewer="grid">
+        <Command idref="nuodb.getIndexes">
+          <Input name="schema" value="${schema}"/>
+          <Input name="objectname" value="${objectname}"/>
+        </Command>
+      </DataView>
     </ObjectView>
 
     <ObjectView type="Views">
@@ -666,7 +683,7 @@ select * from system.datatypes order by NAME
       <DataView type="Indexes" label="Indexes" viewer="grid">
         <Command idref="nuodb.getIndexes">
           <Input name="schema" value="${schema}"/>
-          <Input name="objectname" value="%"/>
+          <Input name="objectname" value="${theTableName}"/>
         </Command>
       </DataView>
     </ObjectView>
