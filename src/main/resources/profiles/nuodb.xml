@@ -275,7 +275,10 @@ select * from system.datatypes order by NAME
 
       <Separator/>
 
-      <Action id="nuodb-table-create-index" label="Create Index" reload="true">
+      <Action id="nuodb-create-index" label="Create Index" reload="true">
+        <Input label="Schema" style="text" editable="false">
+          <Default>${schema}</Default>
+        </Input>
         <Input label="Table" style="text" editable="false">
           <Default>${objectname}</Default>
         </Input>
@@ -314,14 +317,14 @@ select * from system.datatypes order by NAME
 
         <Command>
           <SQL>
-            <![CDATA[create${_type} index${_indexname} on "${objectname}" ${_columns}]]>
+            <![CDATA[create${_type} index${_indexname} on "${schema}"."${objectname}" ${_columns}]]>
           </SQL>
         </Command>
         <Confirm>
-          <![CDATA[Create index "${indexname}"?]]>
+          <![CDATA[Create index "${schema}"."${indexname}"?]]>
         </Confirm>
         <Result>
-          <![CDATA[Index "${indexname}" created!]]>
+          <![CDATA[Index "${schema}"."${indexname}" created!]]>
         </Result>
       </Action>
 
@@ -390,6 +393,35 @@ select * from system.datatypes order by NAME
       </Action>
     </ActionGroup>
 
+    <ActionGroup type="Roles">
+      <Action id="nuodb-roles-create" label="Create Role" reload="true" icon="add">
+        <Input label="Role Name" name="roleid" style="text"/>
+        <Command>
+          <SQL><![CDATA[create role ${roleid}]]></SQL>
+        </Command>
+        <Result>
+          Role ${roleid} created!
+        </Result>
+      </Action>
+    </ActionGroup>
+
+    <ActionGroup type="Role">
+      <Action id="nuodb-role-drop" label="Drop Role" reload="true" icon="remove">
+        <Input label="Role Name" style="text" editable="false">
+          <Default>${objectname}</Default>
+        </Input>
+        <Command>
+          <SQL><![CDATA[drop role "${objectname}"]]></SQL>
+        </Command>
+        <Confirm><![CDATA[
+            Really drop role ${objectname}?
+            ]]></Confirm>
+        <Result>
+          Role ${objectname} dropped!
+        </Result>
+      </Action>
+    </ActionGroup>
+
     <ActionGroup type="View">
       <Action id="nuodb-view-drop" label="Drop View" reload="true" icon="remove">
         <Input label="View" style="text" editable="false">
@@ -420,17 +452,20 @@ select * from system.datatypes order by NAME
 
     <ActionGroup type="Index">
       <Action id="nuodb-index-drop" label="Drop Index" reload="true" icon="remove">
+        <Input label="Schema" style="text" editable="false">
+          <Default>${schema}</Default>
+        </Input>
         <Input label="Index" style="text" editable="false">
           <Default>${objectname}</Default>
         </Input>
         <Command>
-          <SQL><![CDATA[drop index "${objectname}"]]></SQL>
+          <SQL><![CDATA[drop index ${schema}.${objectname}]]></SQL>
         </Command>
         <Confirm>
-          Really drop index ${objectname}?
+          Really drop index ${schema}.${objectname}?
         </Confirm>
         <Result>
-          Index ${objectname} dropped!
+          Index ${schema}.${objectname} dropped!
         </Result>
       </Action>
     </ActionGroup>
