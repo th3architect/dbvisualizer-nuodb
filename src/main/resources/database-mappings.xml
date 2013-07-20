@@ -174,7 +174,6 @@
         <DatabaseMapping>
             <If test="#db.getDatabaseType().equals('nuodb')">
                 <Run expr="#me.setProfile('nuodb')"/>
-                <Run expr="#me.setFacade('com.onseven.dbvis.db.nuodb.NuoDBFacade')"/>
             </If>
         </DatabaseMapping>
 

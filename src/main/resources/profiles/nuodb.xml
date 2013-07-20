@@ -1,165 +1,260 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE DatabaseProfile SYSTEM "dbvis-defs.dtd" [
-        <!ENTITY generic-commands SYSTEM "generic-commands.xml">
-        <!ENTITY generic-view SYSTEM "generic-view.xml">
-        ]>
+    <!ENTITY generic-commands SYSTEM "generic-commands.xml">
+    <!ENTITY generic-view SYSTEM "generic-view.xml">
+    ]>
 
 <!--
-   Copyright (c) DbVis Software AB. All Rights Reserved.
+   Copyright (c) NuoDB, Inc. All Rights Reserved.
 -->
 
 <DatabaseProfile
-        desc="Profile for NuoDB"
-        version="$Revision: $"
-        date="$Date: $"
-        minver="7.1">
+    desc="Profile for NuoDB"
+    version="$Revision: 15892 $"
+    date="$Date: 2013-01-08 12:43:19 +0100 (Tue, 08 Jan 2013) $"
+    minver="7.1">
 
-    <!--
-     Profile Notes
-     =============
-       None.
+  <!--
+   Profile Notes
+   =============
+     None.
 
-     Change Log
-     ==========
-       2012-07-17:
-         - Created by Bob Buck
-    -->
+   Change Log
+   ==========
+     2007-09-11:
+       - Now show Columns and Indexes as child objects for Table objects
+  -->
 
-    <!-- =================================================================== -->
-    <!-- Definition of the commands -->
-    <!-- =================================================================== -->
+  <!-- =================================================================== -->
+  <!-- Definition of the commands -->
+  <!-- =================================================================== -->
 
-    <Commands>
+  <Commands>
 
-        &generic-commands;
+    &generic-commands;
 
-        <!--
-          The "getTableNamesFor" command is used by Database getTableNamesFor().
-          It must return table names for the schema named by ${table_schema}
-          variables in the first column.
-        -->
-        <Command id="nuodb.getTableNamesFor">
-            <SQL>
-                <![CDATA[
-select table_name
-from system.tables
-where table_schem = '${table_schema}'
-order by table_name
+    <Command id="nuodb.getSchemas">
+      <SQL>
+        <![CDATA[
+          SELECT
+            DISTINCT SCHEMA
+          FROM
+            SYSTEM.TABLES
+          ORDER BY
+            SCHEMA
+        ]]>
+      </SQL>
+    </Command>
+
+    <Command id="nuodb.getTables">
+      <SQL>
+        <![CDATA[
+            select *
+            from system.tables
+            where schema = '${schema}' and tablename like '${objectname}'
             ]]>
-            </SQL>
+      </SQL>
+    </Command>
+
+    <Command id="nuodb.getColumns">
+      <SQL>
+        <![CDATA[
+select * from system.fields where schema = '${schema}' and tablename = '${objectname}' order by fieldposition
+        ]]>
+      </SQL>
+    </Command>
+
+    <Command id="nuodb.getIndexes">
+      <SQL>
+        <![CDATA[
+select *
+from system.indexes i
+where SCHEMA = '${schema}' and TABLENAME like '${objectname}'
+and
+(
+    i.TABLENAME not in
+    (
+        select
+            c.TABLENAME
+        from
+            system.TABLECONSTRAINTS c
+        where
+            i.INDEXNAME = c.CONSTRAINTNAME
+        and i.TABLENAME = c.TABLENAME
+    )
+)
+order by INDEXNAME
+            ]]>
+      </SQL>
+    </Command>
+
+  </Commands>
+
+  <!-- =================================================================== -->
+  <!-- Definition of the object actions that are used by the tree and views -->
+  <!-- =================================================================== -->
+
+  <ObjectsActionDef>
+  </ObjectsActionDef>
+
+  <!-- =================================================================== -->
+  <!-- Definition of the database objects tree structure -->
+  <!-- =================================================================== -->
+
+  <ObjectsTreeDef id="nuodb">
+    <GroupNode type="Schemas" label="Schemas">
+      <DataNode type="Schema" label="${getSchemas.TABLE_SCHEM}" is-empty-output="stop">
+        <SetVar name="schema" value="${getSchemas.TABLE_SCHEM}"/>
+        <Command idref="nuodb.getSchemas">
+          <Output id="getSchemas.TABLE_SCHEM" index="1"/>
+          <Filter type="Schema" name="Schema">
+            <Column index="TABLE_SCHEM" name="Name"/>
+          </Filter>
         </Command>
 
-        <!--
-          The "getColumnNamesFor" command is used by Database getColumnNamesFor().
-          It must return column names for the catalog, schema and table named by
-          the ${table_catalog}, ${table_catalog} and ${table_name} variables in
-          the first column.
-        -->
-        <Command id="nuodb.getColumnNamesFor">
-            <SQL>
-                <![CDATA[
-select column_name
-from system.tables
-where table_schem = '${table_schema}'
-and table_name = '${table_name}'
-order by column_name
-            ]]>
-            </SQL>
-        </Command>
+        <GroupNode type="Tables" label="Tables">
+          <DataNode type="Table" label="${getTables.TABLE_NAME}" sort="getTables.TABLE_NAME">
+            <SetVar name="objectname" value="${getTables.TABLE_NAME}"/>
+            <Command idref="nuodb.getTables">
+              <Input name="schema" value="${schema}"/>
+              <Input name="objectname" value="%"/>
+              <Output id="getTables.TABLE_NAME" index="1"/>
+              <Output id="getTables.TABLE_SCHEM" index="2"/>
+              <Filter type="Table" name="Table">
+                <Column index="TABLE_NAME" name="Name"/>
+              </Filter>
+            </Command>
 
-        <Command id="nuodb.getTables">
-            <SQL>
-                <![CDATA[
-select * from system.tables where schema != 'system'
-            ]]>
-            </SQL>
-        </Command>
+            <SetVar name="theTableName" value="${objectname}"/>
 
-        <Command id="nuodb.getTable">
-            <SQL>
-                <![CDATA[
-select * from system.tables where tablename = '${table}'
-            ]]>
-            </SQL>
-        </Command>
-
-        <!-- ================================================================= -->
-        <!-- DBA related commands requiring certain privileges in the database -->
-        <!-- ================================================================= -->
-
-        <Command id="nuodb.getUsers">
-            <SQL>
-                <![CDATA[
-select * from system.users
-            ]]>
-            </SQL>
-        </Command>
-
-        <Command id="nuodb.getRoles">
-            <SQL>
-                <![CDATA[
-select * from system.roles
-            ]]>
-            </SQL>
-        </Command>
-
-        <Command id="nuodb.getSessions">
-            <SQL>
-                <![CDATA[
-select * from system.connections
-            ]]>
-            </SQL>
-        </Command>
-
-    </Commands>
-
-    <!-- =================================================================== -->
-    <!-- Definition of the object actions that are used by the tree and views -->
-    <!-- =================================================================== -->
-
-    <ObjectsActionDef>
-    </ObjectsActionDef>
-
-    <!-- =================================================================== -->
-    <!-- Definition of the database objects tree structure -->
-    <!-- =================================================================== -->
-
-    <ObjectsTreeDef id="nuodb">
-        <GroupNode type="Databases">
-        </GroupNode>
-
-        <GroupNode type="DBA" label="DBA Views">
-
-            <GroupNode type="Users" label="Users">
-                <DataNode type="Login" label="${nuodb.getUsers.USERNAME}" isLeaf="true">
-                    <SetVar name="objectname" value="${nuodb.getUsers.USERNAME}"/>
-                    <Command idref="nuodb.getUsers">
-                        <Output id="nuodb.getUsers.USERNAME" index="1"/>
-                    </Command>
-
-                </DataNode>
+            <GroupNode type="Columns" label="Columns">
+              <DataNode type="Column" label="${getColumns.COLUMN_NAME}  (${getColumns.DATA_TYPE})"
+                        isLeaf="true">
+                <SetVar name="objectname" value="${getColumns.COLUMN_NAME}"/>
+                <Command idref="nuodb.getColumns">
+                  <Input name="schema" value="${schema}"/>
+                  <Input name="objectname" value="${objectname}"/>
+                  <Output id="getColumns.COLUMN_NAME" index="1"/>
+                  <Output id="getColumns.TABLE_NAME" index="2"/>
+                  <Output id="getColumns.TABLE_SCHEM" index="3"/>
+                  <Output id="getColumns.DATA_TYPE" index="9"/>
+                </Command>
+              </DataNode>
             </GroupNode>
 
+            <GroupNode type="Indexes" label="Indexes">
+              <DataNode type="Index" label="${getIndexes.INDEX_NAME}   (${getIndexes.TYPE})"
+                        isLeaf="true">
+                <SetVar name="objectname" value="${getIndexes.INDEX_NAME}"/>
+                <Command idref="nuodb.getIndexes">
+                  <Input name="schema" value="${schema}"/>
+                  <Input name="objectname" value="${theTableName}"/>
+                  <Output id="getIndexes.INDEX_NAME" index="1"/>
+                  <Output id="getIndexes.TABLE_NAME" index="2"/>
+                  <Output id="getIndexes.TABLE_SCHEM" index="3"/>
+                  <Output id="getIndexes.TYPE" index="4"/>
+                </Command>
+              </DataNode>
+            </GroupNode>
+
+            <GroupNode type="Indexes" label="Indexes">
+              <DataNode type="Index"
+                        label="${getIndexes.INDEX_NAME}   (${getIndexes.ORDINAL_POSITION}: ${getIndexes.COLUMN_NAME})"
+                        isLeaf="true">
+                <SetVar name="objectname" value="${getIndexes.INDEX_NAME}"/>
+                <Command idref="nuodb.getIndexes">
+                  <Input name="schema" value="${schema}"/>
+                  <Input name="objectname" value="${theTableName}"/>
+                  <Output modelaction="removeisnullrows" index="INDEX_NAME"/>
+                </Command>
+              </DataNode>
+            </GroupNode>
+
+          </DataNode>
         </GroupNode>
-    </ObjectsTreeDef>
 
-    <!-- =================================================================== -->
-    <!-- Definition of the database objects views -->
-    <!-- =================================================================== -->
+        <GroupNode type="Indexes" label="Indexes">
+          <DataNode type="Index" label="${getIndexes.INDEX_NAME}   (${getIndexes.TABLE_SCHEM}.${getIndexes.TABLE_NAME})"
+                    isLeaf="true">
+            <SetVar name="objectname" value="${getIndexes.INDEX_NAME}"/>
+            <Command idref="nuodb.getIndexes">
+              <Input name="schema" value="${schema}"/>
+              <Input name="objectname" value="%"/>
+              <Output id="getIndexes.INDEX_NAME" index="1"/>
+              <Output id="getIndexes.TABLE_NAME" index="2"/>
+              <Output id="getIndexes.TABLE_SCHEM" index="3"/>
+              <Output id="getIndexes.TYPE" index="4"/>
+              <Filter type="Index" name="Index">
+                <Column index="INDEX_NAME" name="Name"/>
+              </Filter>
+            </Command>
+          </DataNode>
+        </GroupNode>
 
-    <!-- Include the generic-view -->
-    &generic-view;
+      </DataNode>
+    </GroupNode>
+  </ObjectsTreeDef>
 
-    <ObjectsViewDef id="nuodb" extends="generic">
+  <!-- =================================================================== -->
+  <!-- Definition of the database objects views -->
+  <!-- =================================================================== -->
 
-        <!-- DBA views -->
+  <!-- Include the generic-view -->
+  &generic-view;
 
-        <ObjectView type="Users">
-            <DataView type="Users" label="Users" viewer="grid">
-                <Command idref="nuodb.getUsers"/>
-            </DataView>
-        </ObjectView>
+  <ObjectsViewDef id="nuodb" extends="generic">
 
-    </ObjectsViewDef>
+    <ObjectView type="Schemas">
+      <DataView type="Schemas" label="Schemas" viewer="grid">
+        <Command idref="nuodb.getSchemas">
+          <Output id="getSchemas.TABLE_SCHEM" index="1"/>
+          <Output modelaction="rename" index="TABLE_SCHEM" name="Schema"/>
+        </Command>
+      </DataView>
+    </ObjectView>
+
+    <ObjectView type="Schema">
+      <DataView type="Tables" action="drop"/>
+      <DataView type="References" action="drop"/>
+    </ObjectView>
+
+    <ObjectView type="Tables">
+      <DataView type="Tables" label="Tables" viewer="grid">
+        <Command idref="nuodb.getTables">
+          <Input name="schema" value="${schema}"/>
+          <Input name="objectname" value="%"/>
+        </Command>
+      </DataView>
+      <DataView type="References" label="References" viewer="tables-refs"
+                doclink="../databaseExplorer/databaseExplorer.html#mozTocId809328">
+        <Command idref="nuodb.getTables">
+          <Input name="schema" value="${schema}"/>
+          <Input name="objectname" value="%"/>
+        </Command>
+      </DataView>
+    </ObjectView>
+
+    <ObjectView type="Table">
+      <DataView type="Info" label="Info" viewer="form">
+        <Command idref="nuodb.getTables">
+          <Input name="schema" value="${schema}"/>
+          <Input name="objectname" value="${objectname}"/>
+        </Command>
+      </DataView>
+      <DataView type="Columns" label="Columns" viewer="grid">
+        <Command idref="nuodb.getColumns">
+          <Input name="schema" value="${schema}"/>
+          <Input name="objectname" value="${objectname}"/>
+        </Command>
+      </DataView>
+      <DataView type="Index" label="Indexes" viewer="grid">
+        <Command idref="nuodb.getIndexes">
+          <Input name="schema" value="${schema}"/>
+          <Input name="objectname" value="${objectname}"/>
+        </Command>
+      </DataView>
+    </ObjectView>
+
+  </ObjectsViewDef>
 
 </DatabaseProfile>

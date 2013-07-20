@@ -401,10 +401,10 @@
             <Identifier>jdbc:com.nuodb</Identifier>
             <Type>nuodb</Type>
             <URLFormat>
-                jdbc:com.nuodb://&lt;server&gt;:&lt;port48004&gt;/&lt;database&gt;&lt;schema&gt;
+              jdbc:com.nuodb://&lt;server&gt;:&lt;port48004&gt;/&lt;database&gt;&lt;schema&gt;
             </URLFormat>
             <WizardURLFormat>
-                jdbc:com.nuodb://${Server|localhost}${Port|48004||prefix=: }/${Database}${Schema|USER||prefix=? }
+              jdbc:com.nuodb://${Server|localhost}${Port|48004||prefix=: }/${Database}${Schema|USER||prefix=? }
             </WizardURLFormat>
             <DefaultClass>com.nuodb.jdbc.Driver</DefaultClass>
             <WebSite>http://www.dbvis.com/doc/database-drivers/</WebSite>
