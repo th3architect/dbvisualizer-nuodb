@@ -865,7 +865,7 @@ select * from system.datatypes order by NAME
     </ObjectView>
 
     <ObjectView type="Statistics">
-      <DataView type="QueryStatistics" label="Queries" viewer="grid">
+      <DataView type="QueryStatistics" label="Query" viewer="grid">
         <Command idref="nuodb.getQueryStatistics"/>
         <Message>
           <![CDATA[
@@ -875,7 +875,7 @@ Statistics of executed queries exceeding thresholds defined in Settings.
                ]]>
         </Message>
       </DataView>
-      <DataView type="IndexStatistics" label="Indices" viewer="grid">
+      <DataView type="IndexStatistics" label="Index" viewer="grid">
         <Command idref="nuodb.getIndexStatistics"/>
         <Message>
           <![CDATA[
