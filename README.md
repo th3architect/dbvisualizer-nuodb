@@ -7,10 +7,8 @@ DbVisualizer Plugin for NuoDB
 
 This project provides a plugin for DbVisualizer by providing two things:
 
-    * it provides a driver declaration that enables a Wizard to aid in setting up a
-    database connection
-    * it provides a tailored profile that renders all database objects and
-    performance statistics
+- it provides a driver declaration that enables a Wizard to aid in setting up a database connection
+- it provides a tailored profile that renders all database objects and performance statistics
 
 
 # Install Instructions
