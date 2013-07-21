@@ -1,3 +1,17 @@
+DbVisualizer Plugin for NuoDB
+=============================
+
+[<img src="https://api.travis-ci.org/rbuck/dbvisualizer-nuodb.png?branch=master" alt="Build Status" />](http://travis-ci.org/rbuck/dbvisualizer-nuodb)
+
+# Description
+
+This project provides a plugin for DbVisualizer by providing two things:
+
+    * it provides a driver declaration that enables a Wizard to aid in setting up a
+    database connection
+    * it provides a tailored profile that renders all database objects and
+    performance statistics
+
 
 # Install Instructions
 
