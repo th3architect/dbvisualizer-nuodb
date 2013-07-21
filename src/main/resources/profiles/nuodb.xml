@@ -173,6 +173,28 @@ select * from system.datatypes order by NAME
       </SQL>
     </Command>
 
+    <Command id="nuodb.getQueryStatistics">
+      <SQL>
+        <![CDATA[
+          SELECT
+            *
+          FROM
+            SYSTEM.QUERYSTATS
+            ]]>
+      </SQL>
+    </Command>
+
+    <Command id="nuodb.getIndexStatistics">
+      <SQL>
+        <![CDATA[
+          SELECT
+            *
+          FROM
+            SYSTEM.INDEXSTATISTICS
+            ]]>
+      </SQL>
+    </Command>
+
   </Commands>
 
   <!-- =================================================================== -->
@@ -659,6 +681,8 @@ select * from system.datatypes order by NAME
 
       <GroupNode type="Settings" label="Settings" isLeaf="true"/>
 
+      <GroupNode type="Statistics" label="Statistics" isLeaf="true"/>
+
     </GroupNode>
 
   </ObjectsTreeDef>
@@ -824,6 +848,29 @@ select * from system.datatypes order by NAME
 
     <ObjectView type="Type">
       <DataView type="Info" label="Info" viewer="node-form"/>
+    </ObjectView>
+
+    <ObjectView type="Statistics">
+      <DataView type="QueryStatistics" label="Queries" viewer="grid">
+        <Command idref="nuodb.getQueryStatistics"/>
+        <Message>
+          <![CDATA[
+<html>
+Statistics of executed queries exceeding thresholds defined in Settings.
+</html>
+               ]]>
+        </Message>
+      </DataView>
+      <DataView type="IndexStatistics" label="Indices" viewer="grid">
+        <Command idref="nuodb.getIndexStatistics"/>
+        <Message>
+          <![CDATA[
+<html>
+Statistics of indexes.
+</html>
+               ]]>
+        </Message>
+      </DataView>
     </ObjectView>
 
   </ObjectsViewDef>
