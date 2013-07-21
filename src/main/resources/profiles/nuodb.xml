@@ -177,9 +177,9 @@ select * from system.datatypes order by NAME
       <SQL>
         <![CDATA[
           SELECT
-            *
+            S.UNIQUEID, S.SCHEMA, S.USER, S.NODEID, S.TIMESTAMP, S.COUNT, S.RUNTIME, S.NROWS, S.NUMPARAM, S.PARAMS, S.SQLSTRING
           FROM
-            SYSTEM.QUERYSTATS
+            SYSTEM.QUERYSTATS S
             ]]>
       </SQL>
     </Command>
@@ -695,6 +695,20 @@ select * from system.datatypes order by NAME
   &generic-view;
 
   <ObjectsViewDef id="nuodb" extends="generic">
+
+    <ObjectView type="Schemas">
+      <DataView type="Schemas" label="Schemas" viewer="grid">
+        <Command idref="nuodb.getSchemas">
+          <Output modelaction="rename" index="TABLE_SCHEM" name="Schema"/>
+        </Command>
+      </DataView>
+    </ObjectView>
+
+    <ObjectView type="Schema">
+      <DataView type="Tables" action="drop"/>
+      <DataView type="References" action="drop"/>
+    </ObjectView>
+
     <ObjectView type="Tables">
       <DataView type="Tables" label="Tables" viewer="grid">
         <Input name="menuItem" value="Open in New Tab...">
