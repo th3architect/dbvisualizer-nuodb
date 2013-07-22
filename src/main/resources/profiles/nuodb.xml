@@ -549,6 +549,21 @@ select * from system.datatypes order by NAME
                 </Command>
               </DataNode>
             </GroupNode>
+
+            <GroupNode type="Triggers" label="Triggers">
+              <DataNode type="Trigger"
+                        label="${getTriggers.TRIGGER_NAME}   (${getTriggers.TABLE_SCHEM}.${getTriggers.TABLE_NAME})"
+                        isLeaf="true">
+                <Command idref="nuodb.getTriggers">
+                  <Input name="schema" value="${schema}"/>
+                  <Input name="objectname" value="${theTableName}"/>
+                  <Output id="getTriggers.TABLE_SCHEM" index="1"/>
+                  <Output id="getTriggers.TABLE_NAME" index="2"/>
+                  <Output id="getTriggers.TRIGGER_NAME" index="3"/>
+                </Command>
+              </DataNode>
+            </GroupNode>
+
           </DataNode>
         </GroupNode>
 
@@ -563,6 +578,7 @@ select * from system.datatypes order by NAME
                 <Column index="TABLE_NAME" name="Name"/>
               </Filter>
             </Command>
+            <SetVar name="theTableName" value="${objectname}"/>
           </DataNode>
         </GroupNode>
 
@@ -742,6 +758,30 @@ select * from system.datatypes order by NAME
           <Input name="objectname" value="${objectname}"/>
         </Command>
       </DataView>
+      <DataView type="Trigger" label="Triggers" viewer="form">
+        <Command idref="nuodb.getTriggers">
+          <Input name="database" value="${catalog}"/>
+          <Input name="schema" value="${schema}"/>
+          <Input name="objectname" value="${theTableName}"/>
+        </Command>
+      </DataView>
+    </ObjectView>
+
+    <ObjectView type="Triggers">
+      <DataView type="Triggers" label="Triggers" viewer="grid">
+        <Command idref="nuodb.getTriggers">
+          <Input name="schema" value="${schema}"/>
+          <Input name="objectname" value="${theTableName}"/>
+        </Command>
+      </DataView>
+    </ObjectView>
+
+    <ObjectView type="Trigger">
+      <DataView type="SourceEditor" label="Trigger Editor"
+                viewer="ProcedureViewer"
+                classargs="TRIGGER"
+                doclink="../procEditor/procEditor.html"/>
+      <DataView type="Info" label="Info" viewer="node-form"/>
     </ObjectView>
 
     <ObjectView type="Views">
