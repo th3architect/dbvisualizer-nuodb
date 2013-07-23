@@ -23,9 +23,9 @@ esac
 
 mkdir -p ${DBVISUALIZER_HOME}/jdbc/nuodb/
 if [ -e /opt/nuodb/jar/nuodbjdbc.jar ]; then
-    cp /opt/nuodb/jar/nuodbjdbc.jar ${DBVISUALIZER_HOME}/jdbc/nuodb.jar
+    cp /opt/nuodb/jar/nuodbjdbc.jar ${DBVISUALIZER_HOME}/jdbc/nuodb/nuodbjdbc.jar
 else
-    cp ${INSTALLER_HOME}/lib/nuodb-jdbc.jar ${DBVISUALIZER_HOME}/jdbc/nuodb.jar
+    cp ${INSTALLER_HOME}/lib/nuodb-jdbc.jar ${DBVISUALIZER_HOME}/jdbc/nuodb/nuodbjdbc.jar
 fi
 
 cp -R ${INSTALLER_HOME}/resources/* ${DBVISUALIZER_HOME}/resources/

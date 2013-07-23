@@ -17,30 +17,80 @@ There are two ways to install NuoDB support, either unzip the compressed file
 into the DbVisualizer directory, or manually copy each directory. Each approach
 is detailed below.
 
-## Unzip
+## Prerequisites
 
-After performing a maven install command on the project, an archive will be
-generated and is available in the target directory. With that archive, perform
-the following operations:
+The following are prerequisites:
 
-    export dbvisualizer_home=/Applications/DbVisualizer.app/Contents/java/app
-    tar -C ${dbvisualizer_home} xzvf dbvisualizer-nuodb-zip.tar.gz
+- NuoDB 1.1.2, or later is installed
+- DbVisualizer 9.0.8 is installed (prior versions may be supported but are untested)
+- Maven 3 is on your path
 
-## Manual Copying
+## Building a Package
+
+Follow these instructions to build a package:
+
+    git clone https://github.com/rbuck/dbvisualizer-nuodb.git
+    cd dbvisualizer-nuodb
+    mvn clean install
+
+A simple installer is provided in the dbvisualizer-nuodb-plugin.[tar.gz | zip]
+package that will install the plugin and the JDBC jar into DbVisualizer.
+
+## Obtaining a Package
+
+Alternatively, you can download a pre-built package directly from Github:
+
+    wget TBD
+
+## Using the Package Installer (Mac)
+
+To install this on Mac, assuming the default location of DbVisualizer to be the
+following path:
+
+    /Applications/DbVisualizer.app
+
+Then all you need to do is:
+
+    unzip dbvisualizer-nuodb-plugin.zip
+    cd dbvisualizer-nuodb-plugin
+    ./install.sh
+
+If DbVisualizer is installed elsewhere, you can DBVISUALIZER_HOME to the appropriate
+location prior to running the above commands, for example:
+
+    export DBVISUALIZER_HOME=/Applications/DbVisualizer.app/Contents/Resources/app/
+
+n.b. this path includes the path to the internal package contents; the app directory
+name changed between Mac releases of DbVisualizer, so this is one reason why this
+is set up this way, and secondly, the app directory on Mac is identical to the path
+for an install on Linux, so this ought to work for Linux too, I just have not tested
+it yet.
+
+## Manual Installation
+
+After obtaining a package and unzipping it per above, follow these instructions
+to manually install the plugin if you chose to not use the installer.
+
+### Adding NuoDB JDBC Jars
+
+Assuming you've already installed NuoDB:
+
+    mkdir -p ${DBVISUALIZER_HOME}/jdbc/nuodb/
+    cp /opt/nuodb/jar/nuodbjdbc.jar ${DBVISUALIZER_HOME}/jdbc/nuodb/nuodbjdbc.jar
 
 ### Adding Auto-Discovery Support
 
 Enabling auto-discovery of the NuoDB JDBC Jar file:
 
-    export dbvisualizer_home=/Applications/DbVisualizer.app/Contents/java/app
-    cp drivers.xml ${dbvisualizer_home}/resources/
+    export DBVISUALIZER_HOME=/Applications/DbVisualizer.app/Contents/java/app
+    cp drivers.xml ${DBVISUALIZER_HOME}/resources/
 
 ### Adding Profile Support
 
 The DbVisualizer Professional is required in order to enable Profile support.
 To add profile support simply perform these commands to enable NuoDB Profiles:
 
-    export dbvisualizer_home=/Applications/DbVisualizer.app/Contents/java/app
-    cp database-mappings.xml ${dbvisualizer_home}/resources/
-    cp profiles/nuodb.xml ${dbvisualizer_home}/resources/profiles/
+    export DBVISUALIZER_HOME=/Applications/DbVisualizer.app/Contents/java/app
+    cp database-mappings.xml ${DBVISUALIZER_HOME}/resources/
+    cp profiles/nuodb.xml ${DBVISUALIZER_HOME}/resources/profiles/
 
