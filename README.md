@@ -94,3 +94,15 @@ To add profile support simply perform these commands to enable NuoDB Profiles:
     cp database-mappings.xml ${DBVISUALIZER_HOME}/resources/
     cp profiles/nuodb.xml ${DBVISUALIZER_HOME}/resources/profiles/
 
+# DbVisualizer Setup Instructions
+
+To use the features of this plugin you must currently set the Profile for each
+connection; this will change when the DbVisualizer folks add this to their product
+and write a Java hook for NuoDB. At that point the following steps will no longer
+be necessary. But for now, to enable the NuoDB Profile for the connection you've
+established, do the following (requires the Pro version of DbVis):
+
+- Double click on the connection and bring up the connection properties.
+- Under "Database Profile" select "Manually Choose"
+- From list choose the "nuodb" profile, and press Apply.
+- Reconnect the connection to see all the NuoDB specific goodness!
