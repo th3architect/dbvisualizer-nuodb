@@ -403,7 +403,7 @@ select * from system.datatypes order by NAME
           <Values>cascade</Values>
         </Input>
         <Command>
-          <SQL><![CDATA[drop user "${objectname}" ${cascade}]]></SQL>
+          <SQL><![CDATA[drop user ${objectname} ${cascade}]]></SQL>
         </Command>
         <Confirm><![CDATA[
             Really drop user ${objectname}?<br>
@@ -417,29 +417,33 @@ select * from system.datatypes order by NAME
 
     <ActionGroup type="Roles">
       <Action id="nuodb-roles-create" label="Create Role" reload="true" icon="add">
-        <Input label="Role Name" name="roleid" style="text"/>
+        <Input label="Schema Name" name="schema" style="text"/>
+        <Input label="Role Name" name="objectname" style="text"/>
         <Command>
-          <SQL><![CDATA[create role ${roleid}]]></SQL>
+          <SQL><![CDATA[create role ${schema}.${objectname}]]></SQL>
         </Command>
         <Result>
-          Role ${roleid} created!
+          Role ${schema}.${objectname} created!
         </Result>
       </Action>
     </ActionGroup>
 
     <ActionGroup type="Role">
       <Action id="nuodb-role-drop" label="Drop Role" reload="true" icon="remove">
+        <Input label="Role Schema" style="text" editable="false">
+          <Default>${schema}</Default>
+        </Input>
         <Input label="Role Name" style="text" editable="false">
           <Default>${objectname}</Default>
         </Input>
         <Command>
-          <SQL><![CDATA[drop role "${objectname}"]]></SQL>
+          <SQL><![CDATA[drop role ${schema}.${objectname}]]></SQL>
         </Command>
         <Confirm><![CDATA[
-            Really drop role ${objectname}?
+            Really drop role ${schema}${objectname}?
             ]]></Confirm>
         <Result>
-          Role ${objectname} dropped!
+          Role ${schema}.${objectname} dropped!
         </Result>
       </Action>
     </ActionGroup>
@@ -667,8 +671,10 @@ select * from system.datatypes order by NAME
 
       <GroupNode type="Roles" label="Roles">
         <DataNode type="Role" label="${getRoles.ROLENAME}" isLeaf="true">
+          <SetVar name="schema" value="${getRoles.SCHEMA}"/>
           <SetVar name="objectname" value="${getRoles.ROLENAME}"/>
           <Command idref="nuodb.getRoles">
+            <Output id="getRoles.SCHEMA" index="1"/>
             <Output id="getRoles.ROLENAME" index="2"/>
             <Filter type="User" name="User">
               <Column index="ROLENAME" name="Name"/>

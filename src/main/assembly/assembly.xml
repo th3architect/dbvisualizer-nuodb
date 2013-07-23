@@ -15,5 +15,23 @@
         <include>**/*.xml</include>
       </includes>
     </fileSet>
+    <fileSet>
+      <directory>${project.build.scriptSourceDirectory}</directory>
+      <outputDirectory>bin</outputDirectory>
+      <includes>
+        <include>*.sh</include>
+      </includes>
+      <fileMode>0755</fileMode>
+    </fileSet>
   </fileSets>
+  <dependencySets>
+    <dependencySet>
+      <includes>
+        <include>com.nuodb.jdbc:nuodb-jdbc:jar:1.1.1</include>
+      </includes>
+      <outputDirectory>lib</outputDirectory>
+      <outputFileNameMapping>nuodb-jdbc.jar</outputFileNameMapping>
+      <unpack>false</unpack>
+    </dependencySet>
+  </dependencySets>
 </assembly>
