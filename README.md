@@ -40,7 +40,7 @@ package that will install the plugin and the JDBC jar into DbVisualizer.
 
 Alternatively, you can download a pre-built package directly from Github:
 
-    wget TBD
+    wget https://github.com/rbuck/dbvisualizer-nuodb/releases/download/v1.0-prerelease/dbvisualizer-nuodb-plugin.zip
 
 ## Using the Package Installer (Mac)
 
