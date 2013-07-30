@@ -177,7 +177,7 @@ select * from system.datatypes order by NAME
       <SQL>
         <![CDATA[
           SELECT
-            S.UNIQUEID, S.SCHEMA, S.USER, S.NODEID, S.TIMESTAMP, S.COUNT, S.RUNTIME, S.NROWS, S.NUMPARAM, S.PARAMS, S.SQLSTRING
+            S.SCHEMA, S.USER, S.NODEID, S.TIMESTAMP, S.COUNT, S.RUNTIME, S.NROWS, S.NUMPARAM, S.PARAMS, S.SQLSTRING
           FROM
             SYSTEM.QUERYSTATS S
             ]]>

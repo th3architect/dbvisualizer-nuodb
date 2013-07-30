@@ -7,7 +7,7 @@ pushd ${SELF_ROOT} >/dev/null
 SELF_ROOT=`pwd`
 popd >/dev/null
 
-[ -z "${INSTALLER_HOME}" ] && INSTALLER_HOME=`cd "${SELF_ROOT}/.." >/dev/null; pwd`
+[ -z "${INSTALLER_HOME}" ] && INSTALLER_HOME=`cd "${SELF_ROOT}" >/dev/null; pwd`
 
 os_type=`uname -s`
 case $os_type in
