@@ -80,10 +80,22 @@ Assuming you've already installed NuoDB:
 
 ### Adding Auto-Discovery Support
 
-Enabling auto-discovery of the NuoDB JDBC Jar file:
+Enabling auto-discovery of the NuoDB JDBC Jar file by manually adding the following
+XML fragment to the ${DBVISUALIZER_HOME}/resources/drivers.xml file:
 
-    export DBVISUALIZER_HOME=/Applications/DbVisualizer.app/Contents/java/app
-    cp drivers.xml ${DBVISUALIZER_HOME}/resources/
+        <Driver>
+            <Name>NuoDB</Name>
+            <Identifier>jdbc:com.nuodb</Identifier>
+            <Type>nuodb</Type>
+            <URLFormat>
+              jdbc:com.nuodb://&lt;server&gt;:&lt;port48004&gt;/&lt;database&gt;&lt;schema&gt;
+            </URLFormat>
+            <WizardURLFormat>
+              jdbc:com.nuodb://${Server|localhost}${Port|48004||prefix=: }/${Database}${Schema|USER||prefix=? }
+            </WizardURLFormat>
+            <DefaultClass>com.nuodb.jdbc.Driver</DefaultClass>
+            <WebSite>http://www.dbvis.com/doc/database-drivers/</WebSite>
+        </Driver>
 
 ### Adding Profile Support
 
@@ -91,8 +103,16 @@ The DbVisualizer Professional is required in order to enable Profile support.
 To add profile support simply perform these commands to enable NuoDB Profiles:
 
     export DBVISUALIZER_HOME=/Applications/DbVisualizer.app/Contents/java/app
-    cp database-mappings.xml ${DBVISUALIZER_HOME}/resources/
     cp profiles/nuodb.xml ${DBVISUALIZER_HOME}/resources/profiles/
+
+Manually edit the ${DBVISUALIZER_HOME}/resources/database-mappings.xml file to
+include the following XML fragment:
+
+        <DatabaseMapping>
+            <If test="#db.getDatabaseType().equals('nuodb')">
+                <Run expr="#me.setProfile('nuodb')"/>
+            </If>
+        </DatabaseMapping>
 
 # DbVisualizer Setup Instructions
 
