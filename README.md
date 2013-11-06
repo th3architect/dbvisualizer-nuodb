@@ -116,6 +116,11 @@ include the following XML fragment:
 
 # DbVisualizer Setup Instructions
 
+To use the newly installed JDBC driver you must manually set the path to the JAR
+from within the Driver Manager of DBVisualizer. To do so, open Tools..Driver
+Manager, select NuoDB, under User Specified Driver File Paths open and browse to
+the path of the JDBC Jar stored under DBVisualizer.
+
 To use the features of this plugin you must currently set the Profile for each
 connection; this will change when the DbVisualizer folks add this to their product
 and write a Java hook for NuoDB. At that point the following steps will no longer
