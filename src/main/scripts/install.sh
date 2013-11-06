@@ -12,12 +12,16 @@ popd >/dev/null
 os_type=`uname -s`
 case $os_type in
     Darwin*)
+        export JAVA_HOME=`/usr/libexec/java_home -v 1.7`
         if [ -d /Applications/DbVisualizer.app/Contents/Resources/app/ ]; then
             : ${DBVISUALIZER_HOME:="/Applications/DbVisualizer.app/Contents/Resources/app/"}
         fi
     ;;
     Linux*)
         export JAVA_HOME=$(readlink -f /usr/bin/java | sed "s:bin/java::")
+        if [ -d /opt/DbVisualizer ]; then
+            : ${DBVISUALIZER_HOME:="/opt/DbVisualizer"}
+        fi
     ;;
 esac
 
