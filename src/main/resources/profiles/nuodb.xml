@@ -203,7 +203,7 @@ select * from system.datatypes order by NAME
          <Action id="nuodb-schema-export" label="Export Schema"
                  icon="export" reload="false"
                  class="schemaExport"
-                 doclink="../exportImport/exportImport.html#mozTocId816546"/>
+                 doclink="http://www.dbvis.com/doclink/export-schema"/>
       </ActionGroup>
 
       <ActionGroup type="Tables">
@@ -211,11 +211,11 @@ select * from system.datatypes order by NAME
                  icon="add" reload="true"
                  class="tableCreateOrAlter"
                  classargs="create"
-                 doclink="../tableDesigner/tableDesigner.html#mozTocId786186"/>
+                 doclink="http://www.dbvis.com/doclink/create-table"/>
 
          <Action id="nuodb-new-table-import-data" label="Import Table Data" icon="import"
                  class="tableDataImport"
-                 doclink="../exportImport/exportImport.html#mozTocId708449"/>
+                 doclink="http://www.dbvis.com/doclink/import-table"/>
 
       </ActionGroup>
 
@@ -224,7 +224,7 @@ select * from system.datatypes order by NAME
                  icon="edit" reload="true"
                  class="tableCreateOrAlter"
                  classargs="alter"
-                 doclink="../tableDesigner/tableDesigner.html#mozTocId740254"/>
+                 doclink="http://www.dbvis.com/doclink/alter-table"/>
 
          <!-- currently unsupported
          <Action id="nuodb-table-rename" label="Rename Table" reload="true" icon="rename">
@@ -290,7 +290,7 @@ select * from system.datatypes order by NAME
 
          <Action id="nuodb-table-export" label="Export Table" icon="export"
                  class="tableExport"
-                 doclink="../exportImport/exportImport.html#mozTocId584466"/>
+                 doclink="http://www.dbvis.com/doclink/export-table"/>
 
          <Separator/>
 
@@ -780,7 +780,7 @@ select * from system.datatypes order by NAME
          <DataView id="nuodb-trigger-sourceeditor" icon="SourceEditor" label="Trigger Editor"
                    viewer="ProcedureViewer"
                    classargs="TRIGGER"
-                   doclink="../procEditor/procEditor.html"/>
+                   doclink="http://www.dbvis.com/doclink/edit-code-object"/>
          <DataView id="nuodb-trigger-info" icon="Info" label="Info" viewer="node-form"/>
       </ObjectView>
 
