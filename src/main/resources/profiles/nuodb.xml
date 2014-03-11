@@ -2,13 +2,13 @@
 <!DOCTYPE DatabaseProfile SYSTEM "dbvis-defs.dtd">
 
 <!--
-   Copyright (c) NuoDB, Inc. All Rights Reserved.
+   Created by NuoDB, Inc. exclusively for DbVisualizer.
 -->
 
 <DatabaseProfile
         desc="Profile for NuoDB"
-        version="$Revision: $"
-        date="$Date: $"
+        version="$Revision: 17316 $"
+        date="$Date: 2014-02-06 00:24:20 +0100 (Thu, 06 Feb 2014) $"
         minver="9.1"
         extends="generic">
 
@@ -19,35 +19,24 @@
          <SQL>
             <![CDATA[
           SELECT
-            DISTINCT SCHEMA
+            SCHEMA
           FROM
-            SYSTEM.TABLES
+            SYSTEM.SCHEMAS
           ORDER BY
             SCHEMA
-        ]]>
+            ]]>
          </SQL>
       </Command>
 
       <Command id="nuodb.getIndexes">
          <SQL>
             <![CDATA[
-select *
-from system.indexes i
-where SCHEMA = '${schema}' and TABLENAME like '${objectname}'
-and
-(
-    i.TABLENAME not in
-    (
-        select
-            c.TABLENAME
-        from
-            system.TABLECONSTRAINTS c
-        where
-            i.INDEXNAME = c.CONSTRAINTNAME
-        and i.TABLENAME = c.TABLENAME
-    )
-)
-order by INDEXNAME
+          SELECT *
+          FROM 
+            SYSTEM.INDEXES 
+          WHERE 
+            INDEXTYPE IN (1, 2) AND SCHEMA = '${schema}' AND TABLENAME LIKE '${objectname}'
+          ORDER BY INDEXNAME
             ]]>
          </SQL>
       </Command>
@@ -55,7 +44,7 @@ order by INDEXNAME
       <Command id="nuodb.getProcedures">
          <SQL>
             <![CDATA[
-select * from system.procedures where SCHEMA = '${owner}' order by SCHEMA, PROCEDURENAME
+select * from system.procedures where SCHEMA = '${schema}' order by SCHEMA, PROCEDURENAME
             ]]>
          </SQL>
       </Command>
@@ -135,7 +124,7 @@ select * from system.datatypes order by NAME
          </SQL>
       </Command>
 
-      <Command id="nuodb.getSettings">
+      <Command id="nuodb.getSystemProperties">
          <SQL>
             <![CDATA[
           SELECT
@@ -150,7 +139,7 @@ select * from system.datatypes order by NAME
          <SQL>
             <![CDATA[
           SELECT
-            C.CONNID, N.ADDRESS, N.PORT, C.USER, C.OPEN
+            C.CONNID, N.GEOREGION, N.ADDRESS, N.PORT, C.USER, C.OPEN, C.EXECID, C.SQLSTRING
           FROM
             SYSTEM.CONNECTIONS C, SYSTEM.NODES N
           WHERE
@@ -163,7 +152,7 @@ select * from system.datatypes order by NAME
          <SQL>
             <![CDATA[
           SELECT
-            ID, ADDRESS, PORT, TYPE, STATE, CONNSTATE, MSGQSIZE
+            ID, GEOREGION, ADDRESS, PORT, TYPE, STATE, CONNSTATE, MSGQSIZE
           FROM
             SYSTEM.NODES
             ]]>
@@ -199,7 +188,46 @@ select * from system.datatypes order by NAME
    <!-- =================================================================== -->
 
    <ObjectsActionDef extends="false">
+
+      <ActionGroup type="Schemas">
+         <Action id="nuodb-schemas-create" label="Create Schema" reload="true"
+                 resetcatalogs="true" icon="add">
+            <Input label="Schema Name" name="newSchema" style="text" editable="true"/>
+            <Command>
+               <SQL>
+                  <![CDATA[
+                  create schema ${newSchema}
+                  ]]></SQL>
+            </Command>
+            <Confirm>Create schema ${newSchema}?</Confirm>
+            <Result>Schema ${newSchema} created!</Result>
+         </Action>
+      </ActionGroup>
+
       <ActionGroup type="Schema">
+         <Action id="nuodb-schema-drop" label="Drop Schema" reload="true"
+                 resetcatalogs="true" icon="remove">
+            <Input label="Schema" style="text" editable="false">
+               <Default>${schema}</Default>
+            </Input>
+            <Input label="Cascade Objects" name="cascade" style="check">
+               <Values>cascade</Values>
+            </Input>
+            <Command>
+               <SQL>
+                  <![CDATA[
+                  drop schema "${schema}" ${cascade}
+                  ]]></SQL>
+            </Command>
+            <Confirm>
+               <![CDATA[
+                 Really drop schema ${schema}?<br>
+                 (All data will be lost!)
+               ]]>
+            </Confirm>
+            <Result>Schema ${schema} dropped!</Result>
+         </Action>
+
          <Action id="nuodb-schema-export" label="Export Schema"
                  icon="export" reload="false"
                  class="schemaExport"
@@ -226,27 +254,6 @@ select * from system.datatypes order by NAME
                  classargs="alter"
                  doclink="http://www.dbvis.com/doclink/alter-table"/>
 
-         <!-- currently unsupported
-         <Action id="nuodb-table-rename" label="Rename Table" reload="true" icon="rename">
-           <Input label="Schema" style="text" editable="false">
-             <Default>${schema}</Default>
-           </Input>
-           <Input label="Table" style="text" editable="false">
-             <Default>${objectname}</Default>
-           </Input>
-           <Input label="New Table Name" name="newTable" style="text"/>
-           <Command>
-             <SQL><![CDATA[alter table "${schema}"."${objectname}" rename to "${newTable}"]]></SQL>
-           </Command>
-           <Confirm>
-             Confirm rename of ${schema}.${objectname} to ${newTable}?
-           </Confirm>
-           <Result>
-             Table ${schema}.${objectname} renamed to ${newTable}!
-           </Result>
-         </Action>
-         -->
-
          <Action id="nuodb-table-clear" label="Empty Table" reload="true">
             <Input label="Schema" style="text" editable="false">
                <Default>${schema}</Default>
@@ -256,14 +263,13 @@ select * from system.datatypes order by NAME
             </Input>
 
             <Command>
-               <SQL><![CDATA[delete from "${schema}"."${objectname}"]]></SQL>
+               <SQL>
+                  <![CDATA[
+                  delete from "${schema}"."${objectname}"
+                  ]]></SQL>
             </Command>
-            <Confirm>
-               Really remove all rows in table ${schema}.${objectname}?
-            </Confirm>
-            <Result>
-               All rows in table ${schema}.${objectname} has been removed!
-            </Result>
+            <Confirm>Really remove all rows in table ${schema}.${objectname}?</Confirm>
+            <Result>All rows in table ${schema}.${objectname} has been removed!</Result>
          </Action>
 
          <Action id="nuodb-table-drop" label="Drop Table" reload="true" icon="remove">
@@ -274,14 +280,14 @@ select * from system.datatypes order by NAME
                <Default>${objectname}</Default>
             </Input>
             <Command>
-               <SQL><![CDATA[drop table "${schema}"."${objectname}"]]></SQL>
+               <SQL>
+                  <![CDATA[
+                  drop table "${schema}"."${objectname}"
+                  ]]>
+               </SQL>
             </Command>
-            <Confirm>
-               Really drop table ${schema}.${objectname}?
-            </Confirm>
-            <Result>
-               Table ${schema}.${objectname} has been dropped!
-            </Result>
+            <Confirm>Really drop table ${schema}.${objectname}?</Confirm>
+            <Result>Table ${schema}.${objectname} has been dropped!</Result>
          </Action>
 
          <Action id="nuodb-table-import-data" label="Import Table Data" icon="import"
@@ -311,7 +317,7 @@ select * from system.datatypes order by NAME
             <Input label="Columns" style="separator"/>
 
             <Input name="columns" style="grid">
-               <Arg name="output" value='"${columnname}"${_sortorder}'/>
+               <Arg name="output" value='"${columnname}"'/>
                <Arg name="newline" value=", "/>
 
                <Input name="columnname" label="Column Name" style="list">
@@ -322,12 +328,6 @@ select * from system.datatypes order by NAME
                   </Values>
                   <Default>${0}</Default>
                </Input>
-               <Input name="sortorder" label="Sort Order" style="radio">
-                  <Labels>ASC|DESC|Default</Labels>
-                  <Values>ASC|DESC|</Values>
-                  <Default>ASC</Default>
-               </Input>
-               <SetVar name="_sortorder" value='#sortorder.equals("") ? "" : " " + #sortorder'/>
             </Input>
 
             <SetVar name="_type" value='#type.equals("") ? "" : " " + #type'/>
@@ -336,23 +336,73 @@ select * from system.datatypes order by NAME
 
             <Command>
                <SQL>
-                  <![CDATA[create${_type} index${_indexname} on "${schema}"."${objectname}" ${_columns}]]>
+                  <![CDATA[
+                  create${_type} index${_indexname} on "${schema}"."${objectname}" ${_columns}
+                  ]]>
                </SQL>
             </Command>
             <Confirm>
-               <![CDATA[Create index "${schema}"."${indexname}"?]]>
+               Create index "${schema}"."${indexname}"?
             </Confirm>
             <Result>
-               <![CDATA[Index "${schema}"."${indexname}" created!]]>
+               Index "${schema}"."${indexname}" created!
             </Result>
          </Action>
 
+         <Action id="nuodb-tabletrigger-create" label="Create Trigger" icon="add" reload="true"
+                 doclink="http://www.dbvis.com/doclink/create-trigger">
+            <Input label="Schema" style="text" editable="false">
+               <Default>${schema}</Default>
+            </Input>
+            <Input label="Trigger" name="triggerName" style="text"/>
+            <Input label="Trigger Time" name="triggerTime" style="radio">
+               <Values>BEFORE|AFTER</Values>
+               <Default>AFTER</Default>
+            </Input>
+            <Input label="Trigger Event" name="triggerEvent" style="radio">
+               <Values>DELETE|INSERT|UPDATE</Values>
+               <Labels>DELETE</Labels>
+            </Input>
+            <Input label="Table" style="text" editable="false">
+               <Default>${objectname}</Default>
+            </Input>
+            <Input label="Source" style="separator"/>
+            <Input name="source" style="text-editor">
+               <Default><![CDATA[
+--
+--  Insert your own trigger code here
+--
+    THROW 'Not implemented yet';]]>
+               </Default>
+            </Input>
+
+            <Command parsesql="false">
+               <SQL><![CDATA[
+create trigger "${triggerName}"
+  FOR "${schema}"."${objectname}"
+  ${triggerTime} ${triggerEvent}
+as
+${source}
+end_trigger;]]>
+               </SQL>
+            </Command>
+            <Result>
+               <![CDATA[Trigger <b>${schema}.${triggerName}</b> created.]]>
+            </Result>
+         </Action>
+         
          <Separator/>
 
          <Action id="nuodb-table-script" label="Script Table" icon="scriptObject"
                  class="sqlBuilder"
                  classargs="script-dialog,SELECT,SELECT *,INSERT,UPDATE,DELETE,CREATE,DROP"/>
 
+      </ActionGroup>
+
+      <ActionGroup type="Trigger">
+         <Action id="nuodb-trigger-export" label="Export Trigger" icon="export"
+                 class="triggerExport"
+                 doclink="http://www.dbvis.com/doclink/export-code-object"/>
       </ActionGroup>
 
       <ActionGroup type="Views">
@@ -365,83 +415,13 @@ select * from system.datatypes order by NAME
             <Input name="source" style="text-editor"/>
             <Command>
                <SQL>
-                  <![CDATA[create view ${viewName} as ${source}]]></SQL>
+                  <![CDATA[
+                  create view ${viewName} as ${source}
+                  ]]>
+               </SQL>
             </Command>
-            <Confirm>
-               Really create view ${schema}.${viewName}?
-            </Confirm>
-            <Result>
-               View ${schema}.${viewName} created!
-            </Result>
-         </Action>
-      </ActionGroup>
-
-      <ActionGroup type="Users">
-         <Action id="nuodb-users-create" label="Create User" reload="true" icon="add">
-            <Input label="User Name" name="userid" style="text"/>
-            <Input label="Password" name="password" style="password"/>
-            <SetVar name="_password" value="#password.equals('') ? '' : ' password \'' + #password + '\''"/>
-
-            <Command>
-               <SQL><![CDATA[create user ${userid} ${_password}]]></SQL>
-            </Command>
-            <Result>
-               User ${userid} created!
-            </Result>
-         </Action>
-      </ActionGroup>
-
-      <ActionGroup type="User">
-         <Action id="nuodb-user-drop" label="Drop User" reload="true" icon="remove">
-            <Input label="User Name" style="text" editable="false">
-               <Default>${objectname}</Default>
-            </Input>
-            <Input label="Cascade Objects" name="cascade" style="check">
-               <Values>cascade</Values>
-            </Input>
-            <Command>
-               <SQL><![CDATA[drop user ${objectname} ${cascade}]]></SQL>
-            </Command>
-            <Confirm><![CDATA[
-            Really drop user ${objectname}?<br>
-            (Enabling <b>Cascade Objects</b> also removes owned objects!)
-            ]]></Confirm>
-            <Result>
-               User ${objectname} dropped!
-            </Result>
-         </Action>
-      </ActionGroup>
-
-      <ActionGroup type="Roles">
-         <Action id="nuodb-roles-create" label="Create Role" reload="true" icon="add">
-            <Input label="Schema Name" name="schema" style="text"/>
-            <Input label="Role Name" name="objectname" style="text"/>
-            <Command>
-               <SQL><![CDATA[create role ${schema}.${objectname}]]></SQL>
-            </Command>
-            <Result>
-               Role ${schema}.${objectname} created!
-            </Result>
-         </Action>
-      </ActionGroup>
-
-      <ActionGroup type="Role">
-         <Action id="nuodb-role-drop" label="Drop Role" reload="true" icon="remove">
-            <Input label="Role Schema" style="text" editable="false">
-               <Default>${schema}</Default>
-            </Input>
-            <Input label="Role Name" style="text" editable="false">
-               <Default>${objectname}</Default>
-            </Input>
-            <Command>
-               <SQL><![CDATA[drop role ${schema}.${objectname}]]></SQL>
-            </Command>
-            <Confirm><![CDATA[
-            Really drop role ${schema}${objectname}?
-            ]]></Confirm>
-            <Result>
-               Role ${schema}.${objectname} dropped!
-            </Result>
+            <Confirm>Really create view ${schema}.${viewName}?</Confirm>
+            <Result>View ${schema}.${viewName} created!</Result>
          </Action>
       </ActionGroup>
 
@@ -451,14 +431,14 @@ select * from system.datatypes order by NAME
                <Default>${objectname}</Default>
             </Input>
             <Command>
-               <SQL><![CDATA[drop view "${objectname}"]]></SQL>
+               <SQL>
+                  <![CDATA[
+                  drop view "${objectname}"
+                  ]]>
+               </SQL>
             </Command>
-            <Confirm>
-               Really drop view ${objectname}?
-            </Confirm>
-            <Result>
-               View ${objectname} has been dropped!
-            </Result>
+            <Confirm>Really drop view ${objectname}?</Confirm>
+            <Result>View ${objectname} has been dropped!</Result>
          </Action>
 
          <Action id="nuodb-view-export" label="Export View" icon="export"
@@ -482,16 +462,227 @@ select * from system.datatypes order by NAME
                <Default>${objectname}</Default>
             </Input>
             <Command>
-               <SQL><![CDATA[drop index ${schema}.${objectname}]]></SQL>
+               <SQL>
+                  <![CDATA[
+                  drop index "${schema}"."${objectname}"
+                  ]]>
+               </SQL>
+            </Command>
+            <Confirm>Really drop index ${schema}.${objectname}?</Confirm>
+            <Result>Index ${schema}.${objectname} dropped!</Result>
+         </Action>
+      </ActionGroup>
+
+      <ActionGroup type="Procedures">
+         <Action id="nuodb-procedures-create" label="Create Procedure" reload="true" icon="add"
+                 doclink="http://www.dbvis.com/doclink/create-procedure">
+            <Input label="Procedure Owner" name="procedureOwner" style="list">
+               <Values>
+                  <Command idref="nuodb.getSchemas"/>
+               </Values>
+               <Default>${schema}</Default>
+            </Input>
+            <Input label="Procedure Name" name="procedureName" style="text"/>
+            <Input label="Security" name="security" style="radio">
+               <Values>INVOKER|DEFINER</Values>
+               <Default>INVOKER</Default>
+            </Input>
+
+            <Input label="Parameters" style="separator"/>
+            <Input name="parameters" style="grid">
+               <Arg name="output" value="${direction} ${name} ${type}"/>
+               <Arg name="newline" value=", "/>
+
+               <Input name="name" label="Name" style="text"/>
+               <Input name="direction" label="Direction" style="list">
+                  <Values>IN|INOUT|OUT</Values>
+                  <Default>IN</Default>
+               </Input>
+               <Input name="type" label="Type" style="text">
+                  <Default>STRING</Default>
+               </Input>
+            </Input>
+            <!--
+                        <Input label="Source" style="separator"/>
+                        <Input name="source" style="text-editor">
+                           <Default>
+                              <![CDATA[
+            BEGIN
+              DBMS_OUTPUT.PUT_LINE('Sample output');
+            END;
+                              ]]>
+                           </Default>
+                        </Input>
+            -->
+            <SetVar name="_security" value='" SECURITY " + #security'/>
+            <SetVar name="_parameters" value='#parameters.trim().equals("") ? "" : "(" + #parameters + ")"'/>
+
+            <Command parsesql="false">
+               <SQL>
+                  <![CDATA[
+CREATE PROCEDURE "${procedureOwner}".${procedureName}
+${_parameters}
+${_security}
+AS
+  THROW 'Not implemented yet!';
+END_PROCEDURE;
+                  ]]>
+               </SQL>
             </Command>
             <Confirm>
-               Really drop index ${schema}.${objectname}?
+               Create procedure ${procedureOwner}.${procedureName}?
             </Confirm>
             <Result>
-               Index ${schema}.${objectname} dropped!
+               Procedure ${procedureOwner}.${procedureName} created!
             </Result>
          </Action>
       </ActionGroup>
+
+      <ActionGroup type="Procedure">
+         <Action id="nuodb-procedure-export" label="Export Procedure" icon="export"
+                 class="procedureExport"
+                 doclink="http://www.dbvis.com/doclink/export-code-object"/>
+      </ActionGroup>
+
+      <ActionGroup type="Users">
+         <Action id="nuodb-users-create" label="Create User" reload="true" icon="add">
+            <Input label="User Name" name="userid" style="text"/>
+            <Input label="Password" name="password" style="password"/>
+
+            <Command>
+               <SQL>
+                  <![CDATA[
+                  create user ${userid} password '${password}'
+                  ]]>
+               </SQL>
+            </Command>
+            <Result>User ${userid} created!</Result>
+         </Action>
+      </ActionGroup>
+
+      <ActionGroup type="User">
+         <Action id="nuodb-user-drop" label="Drop User" reload="true" icon="remove">
+            <Input label="User Name" style="text" editable="false">
+               <Default>${objectname}</Default>
+            </Input>
+            <Command>
+               <SQL>
+                  <![CDATA[
+                  drop user "${objectname}"
+                  ]]>
+               </SQL>
+            </Command>
+            <Confirm>Really drop user ${objectname}?</Confirm>
+            <Result>User ${objectname} dropped!</Result>
+         </Action>
+
+         <Action id="nuodb-user-changepassword" label="Change Password" reload="false">
+            <Input label="User Name" style="text" editable="false">
+               <Default>${objectname}</Default>
+            </Input>
+            <Input label="Password" name="password" style="password"/>
+            <Command>
+               <SQL>
+                  <![CDATA[
+                  alter user "${objectname}" password '${password}'
+                  ]]>
+               </SQL>
+            </Command>
+            <Confirm>Change password for user ${objectname}?</Confirm>
+            <Result>Password for ${objectname} changed!</Result>
+         </Action>
+      </ActionGroup>
+
+      <ActionGroup type="Roles">
+         <Action id="nuodb-roles-create" label="Create Role" reload="true" icon="add">
+            <Input label="Role Schema" name="schema" style="list">
+               <Values column="1">
+                  <Command idref="nuodb.getSchemas"/>
+               </Values>
+               <Default>${0}</Default>
+            </Input>
+            <Input label="Role Name" name="rolename" style="text"/>
+            <Command>
+               <SQL>
+                  <![CDATA[
+                  create role ${schema}.${rolename}
+                  ]]>
+               </SQL>
+            </Command>
+            <Result>Role ${schema}.${rolename} created!</Result>
+         </Action>
+      </ActionGroup>
+
+      <ActionGroup type="Role">
+         <Action id="nuodb-role-drop" label="Drop Role" reload="true" icon="remove">
+            <Input label="Role Schema" style="text" editable="false">
+               <Default>${schema}</Default>
+            </Input>
+            <Input label="Role Name" style="text" editable="false">
+               <Default>${objectname}</Default>
+            </Input>
+            <Command>
+               <SQL>
+                  <![CDATA[
+                     drop role ${schema}.${objectname}
+                  ]]>
+               </SQL>
+            </Command>
+            <Confirm>Really drop role ${schema}.${objectname}?</Confirm>
+            <Result>Role ${schema}.${objectname} dropped!</Result>
+         </Action>
+      </ActionGroup>
+
+      <ActionGroup type="Session">
+         <Action id="nuodb-session-kill" label="Kill Statement" reload="true" icon="remove">
+            <Input label="Execid" style="text" editable="false">
+               <Default>${objectname}</Default>
+            </Input>
+            <Command>
+               <SQL>
+                  <![CDATA[kill statement ${objectname}]]>
+               </SQL>
+            </Command>
+            <Confirm>
+               Do you really want to kill statement ${objectname} for user ${nuodb.getSessions.USER}?
+            </Confirm>
+         </Action>
+      </ActionGroup>
+
+      <ActionGroup type="SystemProperties">
+         <Action id="nuodb-systemproperties-modify" label="Modify System Properties" reload="false">
+            <Input name="maxQueryCount" label="Max Query Count" style="number" editable="true">
+               <Default>
+                  <Command>
+                     <SQL>
+                        select value from system.properties where property = 'MAX_QUERY_COUNT'
+                     </SQL>
+                  </Command>
+               </Default>
+            </Input>
+            <Input name="minQueryTime" label="Min Query Time (sec)" style="number" editable="true">
+               <Default>
+                  <Command>
+                     <SQL>
+                        select value from system.properties where property = 'MIN_QUERY_TIME'
+                     </SQL>
+                  </Command>
+               </Default>
+            </Input>
+            <Command parsesql="true">
+               <SQL>
+                  <![CDATA[
+                     SET SYSTEM PROPERTY MAX_QUERY_COUNT = ${maxQueryCount};
+                     SET SYSTEM PROPERTY MIN_QUERY_TIME = ${minQueryTime};
+                  ]]>
+               </SQL>
+            </Command>
+            <Confirm>Really update system properties?</Confirm>
+            <Result>System properties updated!</Result>
+         </Action>
+      </ActionGroup>
+
+
    </ObjectsActionDef>
 
    <!-- =================================================================== -->
@@ -506,7 +697,7 @@ select * from system.datatypes order by NAME
             <Command idref="nuodb.getSchemas">
                <Output id="getSchemas.TABLE_SCHEM" index="1"/>
                <Filter type="Schema" name="Schema">
-                  <Column index="TABLE_SCHEM" name="Name"/>
+                  <Column index="SCHEMA" name="Name"/>
                </Filter>
             </Command>
 
@@ -555,6 +746,7 @@ select * from system.datatypes order by NAME
                      <DataNode type="Trigger"
                                label="${getTriggers.TRIGGER_NAME}   (${getTriggers.TABLE_SCHEM}.${getTriggers.TABLE_NAME})"
                                isLeaf="true">
+                        <SetVar name="getDDLName" value="${getTriggers.TABLE_NAME}/${getTriggers.TRIGGER_NAME}"/>
                         <Command idref="nuodb.getTriggers">
                            <Input name="schema" value="${schema}"/>
                            <Input name="objectname" value="${theTableName}"/>
@@ -614,12 +806,18 @@ select * from system.datatypes order by NAME
             </GroupNode>
 
             <GroupNode type="Triggers" label="Triggers">
-               <DataNode type="Trigger" label="${getTriggers.TRIGGER_NAME}" isLeaf="true">
+               <DataNode type="Trigger" label="${getTriggers.TRIGGER_NAME}   (${getTriggers.TABLE_SCHEM}.${getTriggers.TABLE_NAME})" isLeaf="true">
                   <SetVar name="objectname" value="${getTriggers.TRIGGER_NAME}"/>
+                  <SetVar name="getDDLName" value="${getTriggers.TABLE_NAME}/${getTriggers.TRIGGER_NAME}"/>
                   <Command idref="nuodb.getTriggers">
                      <Input name="schema" value="${schema}"/>
                      <Input name="objectname" value="%"/>
+                     <Output id="getTriggers.TABLE_SCHEM" index="1"/>
+                     <Output id="getTriggers.TABLE_NAME" index="2"/>
                      <Output id="getTriggers.TRIGGER_NAME" index="3"/>
+                     <Filter type="Trigger" name="Trigger">
+                        <Column index="TRIGGERNAME" name="Name"/>
+                     </Filter>
                   </Command>
                </DataNode>
             </GroupNode>
@@ -632,7 +830,7 @@ select * from system.datatypes order by NAME
                      <Output id="getSequences.SEQUENCE_SCHEMA" index="1"/>
                      <Output id="getSequences.SEQUENCE_NAME" index="2"/>
                      <Filter type="Sequence" name="Sequence">
-                        <Column index="SEQUENCE_NAME" name="Name"/>
+                        <Column index="SEQUENCENAME" name="Name"/>
                      </Filter>
                   </Command>
                </DataNode>
@@ -642,9 +840,6 @@ select * from system.datatypes order by NAME
                <DataNode type="Type" label="${getTypes.TYPE_NAME}" isLeaf="true">
                   <Command idref="nuodb.getTypes">
                      <Output id="getTypes.TYPE_NAME" index="3"/>
-                     <Filter type="Type" name="Type">
-                        <Column index="TYPE_NAME" name="Name"/>
-                     </Filter>
                   </Command>
                </DataNode>
             </GroupNode>
@@ -673,7 +868,7 @@ select * from system.datatypes order by NAME
                <Command idref="nuodb.getRoles">
                   <Output id="getRoles.SCHEMA" index="1"/>
                   <Output id="getRoles.ROLENAME" index="2"/>
-                  <Filter type="User" name="User">
+                  <Filter type="Role" name="Role">
                      <Column index="ROLENAME" name="Name"/>
                   </Filter>
                </Command>
@@ -696,9 +891,14 @@ select * from system.datatypes order by NAME
             </DataNode>
          </GroupNode>
 
-         <GroupNode type="Sessions" label="Sessions" isLeaf="true"/>
+         <GroupNode type="Sessions" label="Sessions" isLeaf="false">
+            <DataNode type="Session" label="${nuodb.getSessions.USER}  (${nuodb.getSessions.EXECID})" isLeaf="true">
+               <SetVar name="objectname" value="${nuodb.getSessions.EXECID}"/>
+               <Command idref="nuodb.getSessions"/>
+            </DataNode>
+         </GroupNode>
 
-         <GroupNode type="Settings" label="Settings" isLeaf="true"/>
+         <GroupNode type="SystemProperties" label="System Properties" isLeaf="true"/>
 
          <GroupNode type="Statistics" label="Statistics" isLeaf="true"/>
 
@@ -726,6 +926,8 @@ select * from system.datatypes order by NAME
       </ObjectView>
 
       <ObjectView type="Tables">
+         <DataView id="generic-tables-tables" action="drop"/>
+
          <DataView id="nuodb-tables-tables" icon="Tables" label="Tables" viewer="grid">
             <Input name="menuItem" value="Open in New Tab...">
                <Input name="action" value="open-object-in-new-tab-command ${schema||TABLE_SCHEM}${object||TABLE_NAME}"/>
@@ -816,6 +1018,13 @@ select * from system.datatypes order by NAME
          </DataView>
       </ObjectView>
 
+      <ObjectView type="Procedure">
+         <DataView id="nuodb-procedure-sourceeditor" icon="SourceEditor" label="Procedure Editor"
+                   viewer="ProcedureViewer"
+                   classargs="PROCEDURE"
+                   doclink="http://www.dbvis.com/doclink/edit-code-object"/>
+      </ObjectView>
+
       <ObjectView type="Processes">
          <DataView id="nuodb-processes-processes" icon="Processes" label="Processes" viewer="grid">
             <Command idref="nuodb.getProcesses"/>
@@ -850,6 +1059,7 @@ select * from system.datatypes order by NAME
       </ObjectView>
 
       <ObjectView type="Indexes">
+         <DataView id="generic-indexes-indexes" action="drop"/>
          <DataView id="nuodb-indexes-indexes" icon="Indexes" label="Indexes" viewer="grid">
             <Command idref="nuodb.getIndexes">
                <Input name="schema" value="${schema}"/>
@@ -859,6 +1069,7 @@ select * from system.datatypes order by NAME
       </ObjectView>
 
       <ObjectView type="Index">
+         <DataView id="generic-index-index" action="drop"/>
          <DataView id="nuodb-index-index" icon="Index" label="Index" viewer="node-form"/>
          <DataView id="nuodb-index-source" icon="Source" label="DDL" viewer="ddl">
             <Input name="objectType" value="Index"/>
@@ -888,9 +1099,13 @@ select * from system.datatypes order by NAME
          </DataView>
       </ObjectView>
 
-      <ObjectView type="Settings">
-         <DataView id="nuodb-settings-settings" icon="Settings" label="Settings" viewer="grid">
-            <Command idref="nuodb.getSettings"/>
+      <ObjectView type="Session">
+         <DataView id="nuodb-session-session" icon="Session" label="Session" viewer="node-form"/>
+      </ObjectView>
+
+      <ObjectView type="SystemProperties">
+         <DataView id="nuodb-systemproperties-systemproperties" icon="SystemProperties" label="System Properties" viewer="grid">
+            <Command idref="nuodb.getSystemProperties"/>
          </DataView>
       </ObjectView>
 
@@ -910,7 +1125,7 @@ select * from system.datatypes order by NAME
             <Message>
                <![CDATA[
 <html>
-Statistics of executed queries exceeding thresholds defined in Settings.
+Statistics of executed queries exceeding thresholds defined in System Properties.
 </html>
                ]]>
             </Message>
