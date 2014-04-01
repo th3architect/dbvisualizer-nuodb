@@ -7,8 +7,8 @@
 
 <DatabaseProfile
         desc="Profile for NuoDB"
-        version="$Revision: 17316 $"
-        date="$Date: 2014-02-06 00:24:20 +0100 (Thu, 06 Feb 2014) $"
+        version="$Revision: 17461 $"
+        date="$Date: 2014-04-01 11:39:13 +0200 (Tue, 01 Apr 2014) $"
         minver="9.1"
         extends="generic">
 
@@ -32,9 +32,9 @@
          <SQL>
             <![CDATA[
           SELECT *
-          FROM 
-            SYSTEM.INDEXES 
-          WHERE 
+          FROM
+            SYSTEM.INDEXES
+          WHERE
             INDEXTYPE IN (1, 2) AND SCHEMA = '${schema}' AND TABLENAME LIKE '${objectname}'
           ORDER BY INDEXNAME
             ]]>
@@ -56,20 +56,6 @@ select * from system.procedures where SCHEMA = '${schema}' order by SCHEMA, PROC
           FROM
             SYSTEM.SEQUENCES
           WHERE
-            SCHEMA = '${schema}'
-          ORDER BY
-            SCHEMA, SEQUENCENAME
-            ]]>
-         </SQL>
-      </Command>
-
-      <Command id="nuodb.getSequence">
-         <SQL>
-            <![CDATA[
-          SELECT *
-          FROM
-            SYSTEM.SEQUENCES
-          WHERE
             SCHEMA = '${schema}' AND SEQUENCENAME LIKE '${objectname}'
           ORDER BY
             SCHEMA, SEQUENCENAME
@@ -77,16 +63,65 @@ select * from system.procedures where SCHEMA = '${schema}' order by SCHEMA, PROC
          </SQL>
       </Command>
 
+      <Command id="nuodb.getDomains">
+         <SQL>
+            <![CDATA[
+          SELECT
+            d.DOMAINNAME,
+            d.SCHEMA,
+            d.COLLATIONSEQUENCE,
+            d.DATATYPE,
+            t.NAME AS "TYPENAME",
+            d.LENGTH,
+            d.SCALE,
+            d.PRECISION,
+            d.FLAGS,
+            d.DEFAULTVALUE,
+            d.REMARKS
+          FROM
+            SYSTEM.DOMAINS d, SYSTEM.DATATYPES t
+          WHERE
+            d.SCHEMA = '${schema}' AND d.DOMAINNAME LIKE '${objectname}'
+            AND d.DATATYPE = t.ID
+          ORDER BY
+            SCHEMA, DOMAINNAME
+            ]]>
+         </SQL>
+      </Command>
+
       <Command id="nuodb.getTriggers">
          <SQL>
             <![CDATA[
-          SELECT *
-          FROM
-            SYSTEM.TRIGGERS
-          WHERE
-            SCHEMA = '${schema}' AND TABLENAME LIKE '${objectname}'
-          ORDER BY
-            SCHEMA, TABLENAME, TRIGGERNAME
+SELECT
+    SCHEMA,
+    TABLENAME,
+    TRIGGERNAME,
+    TRIGGER_TYPE,
+    CASE TRIGGER_TYPE
+        WHEN 0 THEN 'Java'
+        ELSE 'SQL'
+    END AS TRIGGER_TYPE ,
+    CASE TYPE_MASK
+        WHEN 1 THEN 'BEFORE INSERT'
+        WHEN 2 THEN 'AFTER INSERT'
+        WHEN 4 THEN 'BEFORE UPDATE'
+        WHEN 8 THEN 'AFTER UPDATE'
+        WHEN 16 THEN 'BEFORE DELETE'
+        WHEN 32 THEN 'AFTER DELETE'
+        WHEN 64 THEN 'BEFORE COMMIT'
+        WHEN 128 THEN 'AFTER COMMIT'
+    END AS TRIGGER_EVENT,
+    POSITION,
+    ACTIVE,
+    CLASSNAME,
+    METHODNAME,
+    TRIGGER_TEXT
+FROM
+    SYSTEM.TRIGGERS
+WHERE
+    SCHEMA = '${schema}' AND TABLENAME LIKE '${objectname}'
+ORDER BY
+    SCHEMA, TABLENAME, TRIGGERNAME
             ]]>
          </SQL>
       </Command>
@@ -390,19 +425,13 @@ end_trigger;]]>
                <![CDATA[Trigger <b>${schema}.${triggerName}</b> created.]]>
             </Result>
          </Action>
-         
+
          <Separator/>
 
          <Action id="nuodb-table-script" label="Script Table" icon="scriptObject"
                  class="sqlBuilder"
                  classargs="script-dialog,SELECT,SELECT *,INSERT,UPDATE,DELETE,CREATE,DROP"/>
 
-      </ActionGroup>
-
-      <ActionGroup type="Trigger">
-         <Action id="nuodb-trigger-export" label="Export Trigger" icon="export"
-                 class="triggerExport"
-                 doclink="http://www.dbvis.com/doclink/export-code-object"/>
       </ActionGroup>
 
       <ActionGroup type="Views">
@@ -542,6 +571,147 @@ END_PROCEDURE;
          <Action id="nuodb-procedure-export" label="Export Procedure" icon="export"
                  class="procedureExport"
                  doclink="http://www.dbvis.com/doclink/export-code-object"/>
+      </ActionGroup>
+
+      <ActionGroup type="Trigger">
+         <Action id="nuodb-trigger-drop" label="Drop Trigger" reload="true" icon="remove">
+            <Input label="Schema" style="text" editable="false">
+               <Default>${schema}</Default>
+            </Input>
+            <Input label="Trigger" style="text" editable="false">
+               <Default>${objectname}</Default>
+            </Input>
+            <Command>
+               <SQL>
+                  <![CDATA[
+                  drop trigger "${schema}"."${objectname}"
+                  ]]>
+               </SQL>
+            </Command>
+            <Confirm>Really drop trigger ${schema}.${objectname}?</Confirm>
+            <Result>Trigger ${schema}.${objectname} has been dropped!</Result>
+         </Action>
+
+         <Action id="nuodb-trigger-export" label="Export Trigger" icon="export"
+                 class="triggerExport"
+                 doclink="http://www.dbvis.com/doclink/export-code-object"/>
+      </ActionGroup>
+
+      <ActionGroup type="Sequences">
+         <Action id="nuodb-sequences-create" label="Create Sequence" reload="true" icon="add">
+            <Input label="Schema" style="text" editable="false">
+               <Default>${schema}</Default>
+            </Input>
+            <Input label="Sequence Name" name="sequenceName" style="text"/>
+            <Input label="Start with" name="startWith" style="number">
+               <Default/>
+            </Input>
+            <SetVar name="_startWith" value='#startWith.trim().equals("") ? "" : " start with " + #startWith'/>
+            <Command>
+               <SQL>
+                  <![CDATA[
+                  create sequence "${schema}"."${sequenceName}"${_startWith}
+                  ]]>
+               </SQL>
+            </Command>
+            <Confirm>Really create sequence ${schema}.${sequenceName}?</Confirm>
+            <Result>Sequence ${schema}.${sequenceName} created!</Result>
+         </Action>
+      </ActionGroup>
+
+      <ActionGroup type="Sequence">
+         <Action id="nuodb-sequence-drop" label="Drop Sequence" reload="true" icon="remove">
+            <Input label="Schema" style="text" editable="false">
+               <Default>${schema}</Default>
+            </Input>
+            <Input label="Sequence Name" style="text" editable="false">
+               <Default>${objectname}</Default>
+            </Input>
+            <Command>
+               <SQL>
+                  <![CDATA[
+                  drop sequence "${schema}"."${objectName}"
+                  ]]>
+               </SQL>
+            </Command>
+            <Confirm>Really drop sequence ${schema}.${objectName}?</Confirm>
+            <Result>Sequence ${schema}.${objectName} dropped!</Result>
+         </Action>
+
+         <Action id="nuodb-sequence-alter" label="Alter Sequence" reload="true">
+            <Input label="Schema" style="text" editable="false">
+               <Default>${schema}</Default>
+            </Input>
+            <Input label="Sequence Name" style="text" editable="false">
+               <Default>${objectname}</Default>
+            </Input>
+            <Input label="Start with" name="startWith" style="number">
+               <Default/>
+            </Input>
+            <SetVar name="_startWith" value='#startWith.trim().equals("") ? "" : " start with " + #startWith'/>
+            <Command>
+               <SQL>
+                  <![CDATA[
+                  alter sequence "${schema}"."${objectName}"${_startWith}
+                  ]]>
+               </SQL>
+            </Command>
+            <Confirm>Really alter sequence ${schema}.${objectName}?</Confirm>
+            <Result>Sequence ${schema}.${objectName} altered!</Result>
+         </Action>
+      </ActionGroup>
+
+      <ActionGroup type="Domains">
+         <Action id="nuodb-domains-create" label="Create Domain" reload="true" icon="add">
+            <Input label="Schema" style="text" editable="false">
+               <Default>${schema}</Default>
+            </Input>
+            <Input label="Domain Name" name="domainName" style="text"/>
+            <Input label="Data Type" name="dataType" style="list">
+               <Values column="3">
+                  <Command idref="nuodb.getTypes"/>
+               </Values>
+               <Default>varchar</Default>
+            </Input>
+            <Input label="Data Type Arguments" name="dataTypeArgs" style="text"/>
+            <Input label="Not Null" name="notNull" style="check">
+               <Values>NOT NULL</Values>
+            </Input>
+            <Input label="Default Value" name="defaultValue">
+               <Default>null</Default>
+            </Input>
+            <SetVar name="_notNull" value='#notNull.trim().equals("") ? " NULL" : " " + #notNull'/>
+            <SetVar name="_defaultValue" value='#defaultValue.trim().equals("null") ? "" : " DEFAULT " + #defaultValue'/>
+            <Command>
+               <SQL>
+                  <![CDATA[
+                  create domain "${schema}"."${domainName}" AS ${dataType}${dataTypeArgs}${_notNull}${_defaultValue}
+                  ]]>
+               </SQL>
+            </Command>
+            <Confirm>Really create domain ${schema}.${domainName}?</Confirm>
+            <Result>Domain ${schema}.${domainName} created!</Result>
+         </Action>
+      </ActionGroup>
+
+      <ActionGroup type="Domain">
+         <Action id="nuodb-domain-drop" label="Drop Domain" reload="true" icon="remove">
+            <Input label="Schema" style="text" editable="false">
+               <Default>${schema}</Default>
+            </Input>
+            <Input label="Domain Name" style="text" editable="false">
+               <Default>${objectname}</Default>
+            </Input>
+            <Command>
+               <SQL>
+                  <![CDATA[
+                  drop domain "${schema}"."${objectName}"
+                  ]]>
+               </SQL>
+            </Command>
+            <Confirm>Really drop domain ${schema}.${objectName}?</Confirm>
+            <Result>Domain ${schema}.${objectName} dropped!</Result>
+         </Action>
       </ActionGroup>
 
       <ActionGroup type="Users">
@@ -827,10 +997,27 @@ END_PROCEDURE;
                   <SetVar name="objectname" value="${getSequences.SEQUENCE_NAME}"/>
                   <Command idref="nuodb.getSequences">
                      <Input name="schema" value="${schema}"/>
+                     <Input name="objectname" value="%"/>
                      <Output id="getSequences.SEQUENCE_SCHEMA" index="1"/>
                      <Output id="getSequences.SEQUENCE_NAME" index="2"/>
                      <Filter type="Sequence" name="Sequence">
                         <Column index="SEQUENCENAME" name="Name"/>
+                     </Filter>
+                  </Command>
+               </DataNode>
+            </GroupNode>
+
+            <GroupNode type="Domains" label="Domains">
+               <DataNode type="Domain" label="${getDomains.DOMAINNAME} (${getDomains.TYPENAME})" isLeaf="true">
+                  <SetVar name="objectname" value="${getDomains.DOMAINNAME}"/>
+                  <Command idref="nuodb.getDomains">
+                     <Input name="schema" value="${schema}"/>
+                     <Input name="objectname" value="%"/>
+                     <Output id="getDomains.DOMAINNAME" index="1"/>
+                     <Output id="getDomains.SCHEMA" index="2"/>
+                     <Output id="getDomains.TYPENAME" index="TYPENAME"/>
+                     <Filter type="Domain" name="Domain">
+                        <Column index="DOMAINNAME" name="Name"/>
                      </Filter>
                   </Command>
                </DataNode>
@@ -1039,19 +1226,42 @@ END_PROCEDURE;
          <DataView id="nuodb-sequences-sequences" icon="Sequences" label="Sequences" viewer="grid">
             <Command idref="nuodb.getSequences">
                <Input name="schema" value="${schema}"/>
+               <Input name="objectname" value="%"/>
                <Output id="getSequences.SEQUENCE_SCHEMA" index="1"/>
                <Output id="getSequences.SEQUENCE_NAME" index="2"/>
             </Command>
             <Input name="menuItem" value="Script: DROP SEQUENCE">
-               <!-- DEFECT: Does not fill arguments. -->
-               <Input name="command" value="drop sequence ${schema||SEQUENCE_OWNER}${object||SEQUENCE_NAME}"/>
+               <Input name="command" value="drop sequence ${schema||SCHEMA}${object||SEQUENCENAME}"/>
             </Input>
          </DataView>
       </ObjectView>
 
       <ObjectView type="Sequence">
-         <DataView id="nuodb-sequence-info" icon="Info" label="Info" viewer="form">
-            <Command idref="nuodb.getSequence">
+         <DataView id="nuodb-sequence-info" icon="Info" label="Info" viewer="node-form">
+            <Command idref="nuodb.getSequences">
+               <Input name="schema" value="${schema}"/>
+               <Input name="objectname" value="${objectname}"/>
+            </Command>
+         </DataView>
+      </ObjectView>
+
+      <ObjectView type="Domains">
+         <DataView id="nuodb-domains-domains" icon="Domains" label="Domains" viewer="grid">
+            <Command idref="nuodb.getDomains">
+               <Input name="schema" value="${schema}"/>
+               <Input name="objectname" value="%"/>
+               <Output id="getDomains.SCHEMA" index="1"/>
+               <Output id="getDomains.DOMAINNAME" index="2"/>
+            </Command>
+            <Input name="menuItem" value="Script: DROP DOMAIN">
+               <Input name="command" value="drop domain ${schema||SCHEMA}${object||DOMAINNAME}"/>
+            </Input>
+         </DataView>
+      </ObjectView>
+
+      <ObjectView type="Domain">
+         <DataView id="nuodb-domain-info" icon="Info" label="Info" viewer="node-form">
+            <Command idref="nuodb.getDomains">
                <Input name="schema" value="${schema}"/>
                <Input name="objectname" value="${objectname}"/>
             </Command>
