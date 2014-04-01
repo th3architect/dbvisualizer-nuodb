@@ -8,6 +8,7 @@ jdk:
 notifications:
   recipients:
     - buck.robert.j@gmail.com
+    - dbvis@nuodb.com
 
 script:
   - mvn clean install test

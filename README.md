@@ -1,7 +1,7 @@
 DbVisualizer Plugin for NuoDB
 =============================
 
-[<img src="https://api.travis-ci.org/rbuck/dbvisualizer-nuodb.png?branch=master" alt="Build Status" />](http://travis-ci.org/rbuck/dbvisualizer-nuodb)
+[<img src="https://api.travis-ci.org/nuodb/dbvisualizer-nuodb.png?branch=master" alt="Build Status" />](http://travis-ci.org/nuodb/dbvisualizer-nuodb)
 
 # Description
 
@@ -29,7 +29,7 @@ The following are prerequisites:
 
 Follow these instructions to build a package:
 
-    git clone https://github.com/rbuck/dbvisualizer-nuodb.git
+    git clone https://github.com/nuodb/dbvisualizer-nuodb.git
     cd dbvisualizer-nuodb
     mvn clean install
 
@@ -40,7 +40,7 @@ package that will install the plugin and the JDBC jar into DbVisualizer.
 
 Alternatively, you can download a pre-built package directly from Github:
 
-    wget https://github.com/rbuck/dbvisualizer-nuodb/releases/download/v1.0-rc2/dbvisualizer-nuodb-plugin.zip
+    wget https://github.com/nuodb/dbvisualizer-nuodb/releases/download/v1.0-rc2/dbvisualizer-nuodb-plugin.zip
 
 ## Using the Package Installer (Mac)
 
